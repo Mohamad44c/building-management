@@ -1,18 +1,21 @@
 import React from 'react'
 import './styles.css'
+import { Providers } from '@/components/providers'
 
 export const metadata = {
   description: 'A building management system',
   title: 'Building management system',
 }
 
-export default async function RootLayout(props: { children: React.ReactNode }) {
+export default function RootLayout(props: { children: React.ReactNode }) {
   const { children } = props
 
   return (
     <html lang="en">
       <body>
-        <main>{children}</main>
+        <Providers>
+          <main>{children}</main>
+        </Providers>
       </body>
     </html>
   )

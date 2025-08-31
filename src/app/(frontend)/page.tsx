@@ -1,13 +1,13 @@
-import { headers as getHeaders } from 'next/headers.js'
-import { getPayload } from 'payload'
-import config from '@/payload.config'
-import './styles.css'
+import { ExpensesChart } from '@/components/charts/expenses-chart'
+import { GeneratorExpensesChart } from '@/components/charts/generator-expenses-chart'
 
-export default async function HomePage() {
-  const headers = await getHeaders()
-  const payloadConfig = await config
-  const payload = await getPayload({ config: payloadConfig })
-  const { user } = await payload.auth({ headers })
-
-  return <div className="home"></div>
+export default function HomePage() {
+  return (
+    <div className="space-y-8 p-8">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-8">
+        <ExpensesChart />
+        <GeneratorExpensesChart />
+      </div>
+    </div>
+  )
 }
