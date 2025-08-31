@@ -193,13 +193,25 @@ export interface Payment {
 export interface Tenant {
   id: number;
   name: string;
-  phoneNumber: string;
+  phoneNumber?: string | null;
   building: number | Building;
   monthlyFee: number;
   /**
    * Is this tenant currently active?
    */
   active?: boolean | null;
+  /**
+   * Number of amps taken by the tenant
+   */
+  ampsTaken: number;
+  /**
+   * Floor number where the tenant is located
+   */
+  buildingFloor: number;
+  /**
+   * Accumulated unpaid balance from previous payments
+   */
+  pastDueBalance?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -382,6 +394,9 @@ export interface TenantsSelect<T extends boolean = true> {
   building?: T;
   monthlyFee?: T;
   active?: T;
+  ampsTaken?: T;
+  buildingFloor?: T;
+  pastDueBalance?: T;
   updatedAt?: T;
   createdAt?: T;
 }

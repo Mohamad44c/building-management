@@ -12,6 +12,9 @@ export const Buildings: CollectionConfig = {
       type: 'text',
       required: true,
       unique: true,
+      admin: {
+        placeholder: 'Enter building name',
+      },
     },
     {
       name: 'address',
