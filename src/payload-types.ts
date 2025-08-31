@@ -67,6 +67,12 @@ export interface Config {
   };
   blocks: {};
   collections: {
+    expenses: Expense;
+    'generator-expenses': GeneratorExpense;
+    payments: Payment;
+    'expense-categories': ExpenseCategory;
+    buildings: Building;
+    tenants: Tenant;
     users: User;
     media: Media;
     'payload-locked-documents': PayloadLockedDocument;
@@ -75,6 +81,12 @@ export interface Config {
   };
   collectionsJoins: {};
   collectionsSelect: {
+    expenses: ExpensesSelect<false> | ExpensesSelect<true>;
+    'generator-expenses': GeneratorExpensesSelect<false> | GeneratorExpensesSelect<true>;
+    payments: PaymentsSelect<false> | PaymentsSelect<true>;
+    'expense-categories': ExpenseCategoriesSelect<false> | ExpenseCategoriesSelect<true>;
+    buildings: BuildingsSelect<false> | BuildingsSelect<true>;
+    tenants: TenantsSelect<false> | TenantsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
@@ -82,7 +94,7 @@ export interface Config {
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
   };
   db: {
-    defaultIDType: string;
+    defaultIDType: number;
   };
   globals: {};
   globalsSelect: {};
@@ -115,10 +127,101 @@ export interface UserAuthOperations {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "expenses".
+ */
+export interface Expense {
+  id: number;
+  category: number | ExpenseCategory;
+  description?: string | null;
+  date: string;
+  amount: number;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "expense-categories".
+ */
+export interface ExpenseCategory {
+  id: number;
+  name: string;
+  description?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "generator-expenses".
+ */
+export interface GeneratorExpense {
+  id: number;
+  pricePerThousandLiters: number;
+  liters: number;
+  /**
+   * Automatically calculated from price per 1000 liters
+   */
+  pricePerLiter?: number | null;
+  date: string;
+  /**
+   * Total amount in USD
+   */
+  totalAmount?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payments".
+ */
+export interface Payment {
+  id: number;
+  /**
+   * Select the tenant who made the payment
+   */
+  tenant: number | Tenant;
+  amount: number;
+  date: string;
+  /**
+   * Any additional notes about this payment
+   */
+  notes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tenants".
+ */
+export interface Tenant {
+  id: number;
+  name: string;
+  phoneNumber: string;
+  building: number | Building;
+  monthlyFee: number;
+  /**
+   * Is this tenant currently active?
+   */
+  active?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "buildings".
+ */
+export interface Building {
+  id: number;
+  name: string;
+  address?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "users".
  */
 export interface User {
-  id: string;
+  id: number;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -142,7 +245,7 @@ export interface User {
  * via the `definition` "media".
  */
 export interface Media {
-  id: string;
+  id: number;
   alt: string;
   updatedAt: string;
   createdAt: string;
@@ -161,20 +264,44 @@ export interface Media {
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
-  id: string;
+  id: number;
   document?:
     | ({
+        relationTo: 'expenses';
+        value: number | Expense;
+      } | null)
+    | ({
+        relationTo: 'generator-expenses';
+        value: number | GeneratorExpense;
+      } | null)
+    | ({
+        relationTo: 'payments';
+        value: number | Payment;
+      } | null)
+    | ({
+        relationTo: 'expense-categories';
+        value: number | ExpenseCategory;
+      } | null)
+    | ({
+        relationTo: 'buildings';
+        value: number | Building;
+      } | null)
+    | ({
+        relationTo: 'tenants';
+        value: number | Tenant;
+      } | null)
+    | ({
         relationTo: 'users';
-        value: string | User;
+        value: number | User;
       } | null)
     | ({
         relationTo: 'media';
-        value: string | Media;
+        value: number | Media;
       } | null);
   globalSlug?: string | null;
   user: {
     relationTo: 'users';
-    value: string | User;
+    value: number | User;
   };
   updatedAt: string;
   createdAt: string;
@@ -184,10 +311,10 @@ export interface PayloadLockedDocument {
  * via the `definition` "payload-preferences".
  */
 export interface PayloadPreference {
-  id: string;
+  id: number;
   user: {
     relationTo: 'users';
-    value: string | User;
+    value: number | User;
   };
   key?: string | null;
   value?:
@@ -207,11 +334,81 @@ export interface PayloadPreference {
  * via the `definition` "payload-migrations".
  */
 export interface PayloadMigration {
-  id: string;
+  id: number;
   name?: string | null;
   batch?: number | null;
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "expenses_select".
+ */
+export interface ExpensesSelect<T extends boolean = true> {
+  category?: T;
+  description?: T;
+  date?: T;
+  amount?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "generator-expenses_select".
+ */
+export interface GeneratorExpensesSelect<T extends boolean = true> {
+  pricePerThousandLiters?: T;
+  liters?: T;
+  pricePerLiter?: T;
+  date?: T;
+  totalAmount?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payments_select".
+ */
+export interface PaymentsSelect<T extends boolean = true> {
+  tenant?: T;
+  amount?: T;
+  date?: T;
+  notes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "expense-categories_select".
+ */
+export interface ExpenseCategoriesSelect<T extends boolean = true> {
+  name?: T;
+  description?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "buildings_select".
+ */
+export interface BuildingsSelect<T extends boolean = true> {
+  name?: T;
+  address?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tenants_select".
+ */
+export interface TenantsSelect<T extends boolean = true> {
+  name?: T;
+  phoneNumber?: T;
+  building?: T;
+  monthlyFee?: T;
+  active?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
