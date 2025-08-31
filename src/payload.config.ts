@@ -8,7 +8,6 @@ import { fileURLToPath } from 'url'
 import sharp from 'sharp'
 
 import { Users } from './collections/Users'
-import { Media } from './collections/Media'
 import { ExpenseCategories } from './collections/ExpenseCategories'
 import { Expenses } from './collections/Expenses'
 import { GeneratorExpenses } from './collections/GeneratorExpenses'
