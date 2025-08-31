@@ -27,14 +27,34 @@ export default buildConfig({
     },
   },
   collections: [
-    Expenses,
-    GeneratorExpenses,
-    Payments,
-    ExpenseCategories,
-    Buildings,
-    Tenants,
-    Users,
-    Media,
+    {
+      ...Expenses,
+      admin: { group: 'All Expenses' },
+    },
+    {
+      ...GeneratorExpenses,
+      admin: { group: 'All Expenses' },
+    },
+    {
+      ...Payments,
+      admin: { group: 'All Expenses' },
+    },
+    {
+      ...ExpenseCategories,
+      admin: { group: 'Info' },
+    },
+    {
+      ...Buildings,
+      admin: { group: 'Info' },
+    },
+    {
+      ...Tenants,
+      admin: { group: 'Info' },
+    },
+    {
+      ...Users,
+      admin: { group: 'Settings' },
+    },
   ],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
