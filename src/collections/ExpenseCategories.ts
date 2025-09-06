@@ -4,6 +4,7 @@ export const ExpenseCategories: CollectionConfig = {
   slug: 'expense-categories',
   admin: {
     useAsTitle: 'name',
+    group: 'Info',
   },
   fields: [
     {

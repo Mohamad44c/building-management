@@ -5,6 +5,7 @@ export const Expenses: CollectionConfig = {
   admin: {
     useAsTitle: 'description',
     defaultColumns: ['category', 'amount', 'date', 'description'],
+    group: 'All Expenses',
   },
   fields: [
     {

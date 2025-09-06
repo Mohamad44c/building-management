@@ -5,6 +5,7 @@ export const GeneratorExpenses: CollectionConfig = {
   admin: {
     useAsTitle: 'date',
     defaultColumns: ['pricePerThousandLiters', 'liters', 'pricePerLiter', 'date'],
+    group: 'All Expenses',
   },
   fields: [
     {

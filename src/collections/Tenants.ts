@@ -4,6 +4,7 @@ export const Tenants: CollectionConfig = {
   slug: 'tenants',
   admin: {
     useAsTitle: 'name',
+    group: 'Info',
     defaultColumns: [
       'name',
       'phoneNumber',

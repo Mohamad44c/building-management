@@ -5,6 +5,7 @@ export const Payments: CollectionConfig = {
   admin: {
     useAsTitle: 'id',
     defaultColumns: ['tenant', 'amount', 'date'],
+    group: 'All Expenses',
   },
   fields: [
     {
