@@ -7,12 +7,14 @@ export const Tenants: CollectionConfig = {
     group: 'Info',
     defaultColumns: [
       'name',
-      'phoneNumber',
       'building',
       'monthlyFee',
       'ampsTaken',
       'buildingFloor',
       'pastDueBalance',
+      'elevatorFee',
+      'pricePerAmp',
+      'phoneNumber',
       'active',
     ],
   },
@@ -57,6 +59,24 @@ export const Tenants: CollectionConfig = {
       min: 0,
       admin: {
         description: 'Number of amps taken by the tenant',
+      },
+    },
+    {
+      name: 'elevatorFee',
+      type: 'number',
+      min: 0,
+      admin: {
+        description: 'Elevator fee',
+        step: 0.01,
+      },
+    },
+    {
+      name: 'pricePerAmp',
+      type: 'number',
+      min: 0,
+      admin: {
+        description: 'Price per amp',
+        step: 0.01,
       },
     },
     {
