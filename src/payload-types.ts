@@ -205,6 +205,14 @@ export interface Tenant {
    */
   ampsTaken: number;
   /**
+   * Elevator fee
+   */
+  elevatorFee?: number | null;
+  /**
+   * Price per amp
+   */
+  pricePerAmp?: number | null;
+  /**
    * Floor number where the tenant is located
    */
   buildingFloor: number;
@@ -395,6 +403,8 @@ export interface TenantsSelect<T extends boolean = true> {
   monthlyFee?: T;
   active?: T;
   ampsTaken?: T;
+  elevatorFee?: T;
+  pricePerAmp?: T;
   buildingFloor?: T;
   pastDueBalance?: T;
   updatedAt?: T;

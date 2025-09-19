@@ -14,7 +14,6 @@ export const Tenants: CollectionConfig = {
       'pastDueBalance',
       'elevatorFee',
       'pricePerAmp',
-      'phoneNumber',
       'active',
     ],
   },
