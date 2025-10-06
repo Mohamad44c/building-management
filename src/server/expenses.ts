@@ -42,7 +42,6 @@ export async function getExpensesByDateRange(range: DateRange) {
         break
     }
 
-    const currentUser = await getCurrentUser()
     const payload = await getPayload({ config: configPromise })
 
     const expenses = await payload.find({
