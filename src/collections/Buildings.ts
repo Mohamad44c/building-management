@@ -4,7 +4,7 @@ export const Buildings: CollectionConfig = {
   slug: 'buildings',
   admin: {
     useAsTitle: 'name',
-      defaultColumns: ['name', 'address'],
+    defaultColumns: ['name', 'address'],
     group: 'Info',
   },
   fields: [

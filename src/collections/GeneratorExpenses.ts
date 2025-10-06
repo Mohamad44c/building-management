@@ -3,46 +3,59 @@ import type { CollectionConfig } from 'payload'
 export const GeneratorExpenses: CollectionConfig = {
   slug: 'generator-expenses',
   admin: {
-    useAsTitle: 'date',
-    defaultColumns: ['pricePerThousandLiters', 'liters', 'pricePerLiter', 'date'],
+    useAsTitle: 'expenseType',
+    defaultColumns: ['expenseType', 'amount', 'notes', 'date'],
     group: 'All Expenses',
   },
   fields: [
     {
-      name: 'pricePerThousandLiters',
+      name: 'expenseType',
+      type: 'select',
+      required: true,
+      options: [
+        {
+          label: 'Oil Change',
+          value: 'oil-change',
+        },
+        {
+          label: 'Filters',
+          value: 'filters',
+        },
+        {
+          label: 'Parts',
+          value: 'parts',
+        },
+        {
+          label: 'Labor',
+          value: 'labor',
+        },
+        {
+          label: 'Other',
+          value: 'other',
+        },
+      ],
+      admin: {
+        description: 'Select the type of generator expense',
+      },
+    },
+    {
+      name: 'hours',
+      type: 'number',
+      min: 0,
+      admin: {
+        step: 0.1,
+        description: 'Hours for oil change (only applicable for Oil Change)',
+        condition: (data) => data?.expenseType === 'oil-change',
+      },
+    },
+    {
+      name: 'amount',
       type: 'number',
       required: true,
       min: 0,
       admin: {
         step: 0.01,
-      },
-    },
-    {
-      name: 'liters',
-      type: 'number',
-      required: true,
-      min: 0,
-      admin: {
-        step: 0.1,
-      },
-    },
-    {
-      name: 'pricePerLiter',
-      type: 'number',
-      admin: {
-        position: 'sidebar',
-        readOnly: true,
-        description: 'Automatically calculated from price per 1000 liters',
-      },
-      hooks: {
-        beforeChange: [
-          ({ data }) => {
-            if (data?.pricePerThousandLiters) {
-              return data.pricePerThousandLiters / 1000
-            }
-            return 0
-          },
-        ],
+        description: 'Amount paid in USD',
       },
     },
     {
@@ -57,22 +70,11 @@ export const GeneratorExpenses: CollectionConfig = {
       },
     },
     {
-      name: 'totalAmount',
-      type: 'number',
+      name: 'notes',
+      type: 'textarea',
       admin: {
-        position: 'sidebar',
-        readOnly: true,
-        description: 'Total amount in USD',
-      },
-      hooks: {
-        beforeChange: [
-          ({ data }) => {
-            if (data?.pricePerThousandLiters && data.liters) {
-              return (data.pricePerThousandLiters / 1000) * data.liters
-            }
-            return 0
-          },
-        ],
+        description: 'Additional notes about this expense',
+        rows: 3,
       },
     },
   ],

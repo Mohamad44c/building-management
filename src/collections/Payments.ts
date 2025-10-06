@@ -3,8 +3,8 @@ import type { CollectionConfig } from 'payload'
 export const Payments: CollectionConfig = {
   slug: 'payments',
   admin: {
-    useAsTitle: 'id',
-    defaultColumns: ['tenant', 'amount', 'date'],
+    useAsTitle: 'tenant',
+    defaultColumns: ['tenant', 'amount', 'notes', 'date'],
     group: 'All Expenses',
   },
   fields: [

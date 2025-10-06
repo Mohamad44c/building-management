@@ -68,6 +68,7 @@ export interface Config {
   blocks: {};
   collections: {
     expenses: Expense;
+    'diesel-expenses': DieselExpense;
     'generator-expenses': GeneratorExpense;
     payments: Payment;
     'expense-categories': ExpenseCategory;
@@ -81,6 +82,7 @@ export interface Config {
   collectionsJoins: {};
   collectionsSelect: {
     expenses: ExpensesSelect<false> | ExpensesSelect<true>;
+    'diesel-expenses': DieselExpensesSelect<false> | DieselExpensesSelect<true>;
     'generator-expenses': GeneratorExpensesSelect<false> | GeneratorExpensesSelect<true>;
     payments: PaymentsSelect<false> | PaymentsSelect<true>;
     'expense-categories': ExpenseCategoriesSelect<false> | ExpenseCategoriesSelect<true>;
@@ -149,9 +151,9 @@ export interface ExpenseCategory {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "generator-expenses".
+ * via the `definition` "diesel-expenses".
  */
-export interface GeneratorExpense {
+export interface DieselExpense {
   id: number;
   pricePerThousandLiters: number;
   liters: number;
@@ -164,6 +166,32 @@ export interface GeneratorExpense {
    * Total amount in USD
    */
   totalAmount?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "generator-expenses".
+ */
+export interface GeneratorExpense {
+  id: number;
+  /**
+   * Select the type of generator expense
+   */
+  expenseType: 'oil-change' | 'filters' | 'parts' | 'labor' | 'other';
+  /**
+   * Hours for oil change (only applicable for Oil Change)
+   */
+  hours?: number | null;
+  /**
+   * Amount paid in USD
+   */
+  amount: number;
+  date: string;
+  /**
+   * Additional notes about this expense
+   */
+  notes?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -205,9 +233,9 @@ export interface Tenant {
    */
   ampsTaken: number;
   /**
-   * Elevator fee
+   * Building fee
    */
-  elevatorFee?: number | null;
+  buildingFee?: number | null;
   /**
    * Price per amp
    */
@@ -220,6 +248,10 @@ export interface Tenant {
    * Accumulated unpaid balance from previous payments
    */
   pastDueBalance?: number | null;
+  /**
+   * Any additional notes about this tenant
+   */
+  notes?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -268,6 +300,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'expenses';
         value: number | Expense;
+      } | null)
+    | ({
+        relationTo: 'diesel-expenses';
+        value: number | DieselExpense;
       } | null)
     | ({
         relationTo: 'generator-expenses';
@@ -349,14 +385,27 @@ export interface ExpensesSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "generator-expenses_select".
+ * via the `definition` "diesel-expenses_select".
  */
-export interface GeneratorExpensesSelect<T extends boolean = true> {
+export interface DieselExpensesSelect<T extends boolean = true> {
   pricePerThousandLiters?: T;
   liters?: T;
   pricePerLiter?: T;
   date?: T;
   totalAmount?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "generator-expenses_select".
+ */
+export interface GeneratorExpensesSelect<T extends boolean = true> {
+  expenseType?: T;
+  hours?: T;
+  amount?: T;
+  date?: T;
+  notes?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -403,10 +452,11 @@ export interface TenantsSelect<T extends boolean = true> {
   monthlyFee?: T;
   active?: T;
   ampsTaken?: T;
-  elevatorFee?: T;
+  buildingFee?: T;
   pricePerAmp?: T;
   buildingFloor?: T;
   pastDueBalance?: T;
+  notes?: T;
   updatedAt?: T;
   createdAt?: T;
 }

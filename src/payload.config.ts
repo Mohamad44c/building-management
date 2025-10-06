@@ -10,6 +10,7 @@ import sharp from 'sharp'
 import { Users } from './collections/Users'
 import { ExpenseCategories } from './collections/ExpenseCategories'
 import { Expenses } from './collections/Expenses'
+import { DieselExpenses } from './collections/DieselExpenses'
 import { GeneratorExpenses } from './collections/GeneratorExpenses'
 import { Buildings } from './collections/Buildings'
 import { Tenants } from './collections/Tenants'
@@ -27,6 +28,7 @@ export default buildConfig({
   },
   collections: [
     Expenses,
+    DieselExpenses,
     GeneratorExpenses,
     Payments,
     ExpenseCategories,
