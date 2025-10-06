@@ -101,3 +101,53 @@ export async function getDieselExpensesByDateRange(range: DateRange) {
     return []
   }
 }
+
+// Get payments by building
+export async function getPaymentsByBuilding() {
+  try {
+    const payload = await getPayload({ config: configPromise })
+
+    // Get all buildings
+    const buildings = await payload.find({
+      collection: 'buildings',
+      sort: 'name',
+    })
+
+    // Get all payments with tenant and building information
+    const payments = await payload.find({
+      collection: 'payments',
+      depth: 2,
+      sort: '-date',
+    })
+
+    // Calculate totals by building
+    const buildingTotals = buildings.docs.map((building) => {
+      const buildingPayments = payments.docs.filter((payment) => {
+        const tenant = payment.tenant as any
+        return tenant?.building?.id === building.id
+      })
+
+      const total = buildingPayments.reduce((sum, payment) => sum + (payment.amount || 0), 0)
+
+      return {
+        id: building.id,
+        name: building.name,
+        total,
+      }
+    })
+
+    // Calculate total of all buildings
+    const grandTotal = buildingTotals.reduce((sum, building) => sum + building.total, 0)
+
+    return {
+      buildings: buildingTotals,
+      grandTotal,
+    }
+  } catch (error) {
+    console.error('Error getting payments by building:', error)
+    return {
+      buildings: [],
+      grandTotal: 0,
+    }
+  }
+}

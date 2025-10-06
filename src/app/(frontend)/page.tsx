@@ -1,5 +1,6 @@
 import { ExpensesChart } from '@/components/charts/expenses-chart'
 import { DieselExpensesChart } from '@/components/charts/diesel-expenses-chart'
+import { PaymentsByBuildingChart } from '@/components/charts/payments-by-building-chart'
 
 export default function HomePage() {
   return (
@@ -7,6 +8,7 @@ export default function HomePage() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-8">
         <ExpensesChart />
         <DieselExpensesChart />
+        <PaymentsByBuildingChart />
       </div>
     </div>
   )
