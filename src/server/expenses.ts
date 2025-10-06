@@ -171,9 +171,6 @@ export async function getTenantsByBuilding() {
       sort: 'name',
     })
 
-    console.log('Total tenants found:', tenants.docs.length)
-    console.log('Total buildings found:', buildings.docs.length)
-
     // Calculate tenant data by building
     const buildingData = await Promise.all(
       buildings.docs.map(async (building) => {
@@ -190,8 +187,6 @@ export async function getTenantsByBuilding() {
         })
 
         const buildingTenants = buildingTenantsQuery.docs
-
-        console.log(`Building ${building.name}: ${buildingTenants.length} tenants`)
 
         const totalAmps = buildingTenants.reduce((sum, tenant) => {
           const amps = Number(tenant.ampsTaken) || 0
@@ -229,12 +224,6 @@ export async function getTenantsByBuilding() {
       (sum, building) => sum + building.totalBuildingFees,
       0,
     )
-
-    console.log('Grand totals:', {
-      grandTotalAmps,
-      grandTotalMonthlyFees,
-      grandTotalBuildingFees,
-    })
 
     return {
       buildings: buildingData,
