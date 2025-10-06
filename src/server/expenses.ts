@@ -150,3 +150,81 @@ export async function getPaymentsByBuilding() {
     }
   }
 }
+
+// Get tenant data by building
+export async function getTenantsByBuilding() {
+  try {
+    const payload = await getPayload({ config: configPromise })
+
+    // Get all buildings
+    const buildings = await payload.find({
+      collection: 'buildings',
+      sort: 'name',
+    })
+
+    // Get all tenants with building information
+    const tenants = await payload.find({
+      collection: 'tenants',
+      depth: 1,
+      where: {
+        active: {
+          equals: true,
+        },
+      },
+      sort: 'name',
+    })
+
+    // Calculate tenant data by building
+    const buildingData = buildings.docs.map((building) => {
+      const buildingTenants = tenants.docs.filter((tenant) => {
+        const tenantBuilding = tenant.building as any
+        return tenantBuilding?.id === building.id
+      })
+
+      const totalAmps = buildingTenants.reduce((sum, tenant) => sum + (tenant.ampsTaken || 0), 0)
+      const totalMonthlyFees = buildingTenants.reduce(
+        (sum, tenant) => sum + (tenant.monthlyFee || 0),
+        0,
+      )
+      const totalBuildingFees = buildingTenants.reduce(
+        (sum, tenant) => sum + (tenant.buildingFee || 0),
+        0,
+      )
+
+      return {
+        id: building.id,
+        name: building.name,
+        totalAmps,
+        totalMonthlyFees,
+        totalBuildingFees,
+        tenantCount: buildingTenants.length,
+      }
+    })
+
+    // Calculate grand totals
+    const grandTotalAmps = buildingData.reduce((sum, building) => sum + building.totalAmps, 0)
+    const grandTotalMonthlyFees = buildingData.reduce(
+      (sum, building) => sum + building.totalMonthlyFees,
+      0,
+    )
+    const grandTotalBuildingFees = buildingData.reduce(
+      (sum, building) => sum + building.totalBuildingFees,
+      0,
+    )
+
+    return {
+      buildings: buildingData,
+      grandTotalAmps,
+      grandTotalMonthlyFees,
+      grandTotalBuildingFees,
+    }
+  } catch (error) {
+    console.error('Error getting tenants by building:', error)
+    return {
+      buildings: [],
+      grandTotalAmps: 0,
+      grandTotalMonthlyFees: 0,
+      grandTotalBuildingFees: 0,
+    }
+  }
+}

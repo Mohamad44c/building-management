@@ -2,6 +2,7 @@ import { ExpensesChart } from '@/components/charts/expenses-chart'
 import { DieselExpensesChart } from '@/components/charts/diesel-expenses-chart'
 import { DieselAmountChart } from '@/components/charts/diesel-amount-chart'
 import { PaymentsByBuildingChart } from '@/components/charts/payments-by-building-chart'
+import { TenantsByBuildingChart } from '@/components/charts/tenants-by-building-chart'
 
 export default function HomePage() {
   return (
@@ -21,10 +22,11 @@ export default function HomePage() {
 
       {/* Charts Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-8">
+        <PaymentsByBuildingChart />
+        <TenantsByBuildingChart />
         <ExpensesChart />
         <DieselExpensesChart />
         <DieselAmountChart />
-        <PaymentsByBuildingChart />
       </div>
     </div>
   )
