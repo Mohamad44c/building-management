@@ -48,9 +48,6 @@ export async function getExpensesByDateRange(range: DateRange) {
     const expenses = await payload.find({
       collection: 'expenses',
       where: {
-        user: {
-          equals: currentUser.id,
-        },
         date: {
           greater_than_equal: startDate.toISOString(),
           less_than_equal: now.toISOString(),
@@ -59,6 +56,7 @@ export async function getExpensesByDateRange(range: DateRange) {
       sort: '-date',
     })
 
+    console.log('Expenses', expenses.docs)
     return expenses.docs
   } catch (error) {
     console.error('Error getting expenses:', error)
@@ -66,8 +64,8 @@ export async function getExpensesByDateRange(range: DateRange) {
   }
 }
 
-// Get generator expenses by date range
-export async function getGeneratorExpensesByDateRange(range: DateRange) {
+// Get diesel expenses by date range
+export async function getDieselExpensesByDateRange(range: DateRange) {
   try {
     const now = new Date()
     let startDate = new Date()
@@ -84,15 +82,11 @@ export async function getGeneratorExpensesByDateRange(range: DateRange) {
         break
     }
 
-    const currentUser = await getCurrentUser()
     const payload = await getPayload({ config: configPromise })
 
     const expenses = await payload.find({
-      collection: 'generator-expenses',
+      collection: 'diesel-expenses',
       where: {
-        user: {
-          equals: currentUser.id,
-        },
         date: {
           greater_than_equal: startDate.toISOString(),
           less_than_equal: now.toISOString(),
@@ -103,7 +97,7 @@ export async function getGeneratorExpensesByDateRange(range: DateRange) {
 
     return expenses.docs
   } catch (error) {
-    console.error('Error getting generator expenses:', error)
+    console.error('Error getting diesel expenses:', error)
     return []
   }
 }

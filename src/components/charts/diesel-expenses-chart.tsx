@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { DateRangeFilter, type DateRange } from '@/components/ui/date-range-filter'
-import { useGeneratorExpenses } from '@/hooks/use-expenses'
+import { useDieselExpenses } from '@/hooks/use-expenses'
 import { useState } from 'react'
 import {
   Bar,
@@ -14,13 +14,13 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-import { GeneratorExpense } from '@/payload-types'
+import { DieselExpense } from '@/payload-types'
 
-export function GeneratorExpensesChart() {
+export function DieselExpensesChart() {
   const [dateRange, setDateRange] = useState<DateRange>('month')
-  const { data: expenses, isLoading } = useGeneratorExpenses(dateRange)
+  const { data: expenses, isLoading } = useDieselExpenses(dateRange)
 
-  const chartData = expenses?.map((expense: GeneratorExpense) => ({
+  const chartData = expenses?.map((expense: DieselExpense) => ({
     date: new Date(expense.date).toLocaleDateString(),
     totalAmount: expense.totalAmount,
     liters: expense.liters,
@@ -29,7 +29,7 @@ export function GeneratorExpensesChart() {
   return (
     <Card className="col-span-4">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle>Generator Expenses Overview</CardTitle>
+        <CardTitle>Diesel Expenses Overview</CardTitle>
         <DateRangeFilter onRangeChange={setDateRange} defaultValue={dateRange} />
       </CardHeader>
       <CardContent>
@@ -45,7 +45,12 @@ export function GeneratorExpensesChart() {
               <Tooltip />
               <Legend />
               <Bar yAxisId="left" dataKey="totalAmount" fill="#8884d8" name="Total Amount ($)" />
-              <Bar yAxisId="right" dataKey="liters" fill="#82ca9d" name="Diesel (Liters)" />
+              <Bar
+                yAxisId="right"
+                dataKey="liters"
+                fill="#82ca9d"
+                name="Diesel (Thousand Liters)"
+              />
             </BarChart>
           </ResponsiveContainer>
         )}
