@@ -162,44 +162,62 @@ export async function getTenantsByBuilding() {
       sort: 'name',
     })
 
-    // Get all tenants with building information
+    // Get ALL tenants (not just active ones) with building information
+    // Use limit: 0 to get all tenants without pagination
     const tenants = await payload.find({
       collection: 'tenants',
       depth: 1,
-      where: {
-        active: {
-          equals: true,
-        },
-      },
+      limit: 0,
       sort: 'name',
     })
 
+    console.log('Total tenants found:', tenants.docs.length)
+    console.log('Total buildings found:', buildings.docs.length)
+
     // Calculate tenant data by building
-    const buildingData = buildings.docs.map((building) => {
-      const buildingTenants = tenants.docs.filter((tenant) => {
-        const tenantBuilding = tenant.building as any
-        return tenantBuilding?.id === building.id
-      })
+    const buildingData = await Promise.all(
+      buildings.docs.map(async (building) => {
+        // Query tenants for this specific building to ensure we get all of them
+        const buildingTenantsQuery = await payload.find({
+          collection: 'tenants',
+          where: {
+            building: {
+              equals: building.id,
+            },
+          },
+          depth: 1,
+          limit: 0,
+        })
 
-      const totalAmps = buildingTenants.reduce((sum, tenant) => sum + (tenant.ampsTaken || 0), 0)
-      const totalMonthlyFees = buildingTenants.reduce(
-        (sum, tenant) => sum + (tenant.monthlyFee || 0),
-        0,
-      )
-      const totalBuildingFees = buildingTenants.reduce(
-        (sum, tenant) => sum + (tenant.buildingFee || 0),
-        0,
-      )
+        const buildingTenants = buildingTenantsQuery.docs
 
-      return {
-        id: building.id,
-        name: building.name,
-        totalAmps,
-        totalMonthlyFees,
-        totalBuildingFees,
-        tenantCount: buildingTenants.length,
-      }
-    })
+        console.log(`Building ${building.name}: ${buildingTenants.length} tenants`)
+
+        const totalAmps = buildingTenants.reduce((sum, tenant) => {
+          const amps = Number(tenant.ampsTaken) || 0
+          return sum + amps
+        }, 0)
+
+        const totalMonthlyFees = buildingTenants.reduce((sum, tenant) => {
+          const fee = Number(tenant.monthlyFee) || 0
+          return sum + fee
+        }, 0)
+
+        const totalBuildingFees = buildingTenants.reduce((sum, tenant) => {
+          const fee = Number(tenant.buildingFee) || 0
+          return sum + fee
+        }, 0)
+
+        return {
+          id: building.id,
+          name: building.name,
+          totalAmps,
+          totalMonthlyFees,
+          totalBuildingFees,
+          tenantCount: buildingTenants.length,
+        }
+      }),
+    )
 
     // Calculate grand totals
     const grandTotalAmps = buildingData.reduce((sum, building) => sum + building.totalAmps, 0)
@@ -211,6 +229,12 @@ export async function getTenantsByBuilding() {
       (sum, building) => sum + building.totalBuildingFees,
       0,
     )
+
+    console.log('Grand totals:', {
+      grandTotalAmps,
+      grandTotalMonthlyFees,
+      grandTotalBuildingFees,
+    })
 
     return {
       buildings: buildingData,
