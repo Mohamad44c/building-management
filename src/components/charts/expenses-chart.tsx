@@ -21,7 +21,11 @@ export function ExpensesChart() {
   const { data: expenses, isLoading } = useExpenses(dateRange)
 
   const chartData = expenses?.map((expense: Expense) => ({
-    date: new Date(expense.date).toLocaleDateString(),
+    date: new Date(expense.date).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    }),
     amount: expense.amount,
     category: expense.category,
   }))
@@ -43,7 +47,7 @@ export function ExpensesChart() {
               <YAxis />
               <Tooltip />
               <Legend />
-              <Bar dataKey="amount" fill="#8884d8" name="Amount ($)" />
+              <Bar dataKey="amount" fill="#98bad5" name="Amount ($)" />
             </BarChart>
           </ResponsiveContainer>
         )}
