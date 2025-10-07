@@ -3,13 +3,14 @@
 import { useTenants } from '@/hooks/use-tenants'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Building } from 'lucide-react'
 
 export function TenantsByBuildingChart() {
   const { data, isLoading, error } = useTenants()
 
   if (isLoading) {
     return (
-      <Card className="col-span-1 md:col-span-2 lg:col-span-4">
+      <Card className="col-span-1 md:col-span-2 lg:col-span-5">
         <CardHeader>
           <CardTitle>Tenant Data by Building</CardTitle>
         </CardHeader>
@@ -24,7 +25,7 @@ export function TenantsByBuildingChart() {
 
   if (error) {
     return (
-      <Card className="col-span-1 md:col-span-2 lg:col-span-4">
+      <Card className="col-span-1 md:col-span-2 lg:col-span-5">
         <CardHeader>
           <CardTitle>Tenant Data by Building</CardTitle>
         </CardHeader>
@@ -37,9 +38,10 @@ export function TenantsByBuildingChart() {
 
   if (!data || data.buildings.length === 0) {
     return (
-      <Card className="col-span-1 md:col-span-2 lg:col-span-4">
-        <CardHeader>
+      <Card className="col-span-1 md:col-span-2 lg:col-span-5">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle>Tenant Data by Building</CardTitle>
+          <Building />
         </CardHeader>
         <CardContent>
           <p className="text-gray-500">No tenant data available</p>
@@ -56,9 +58,10 @@ export function TenantsByBuildingChart() {
   }
 
   return (
-    <Card className="col-span-1 md:col-span-2 lg:col-span-4">
-      <CardHeader>
+    <Card className="col-span-1 md:col-span-2 lg:col-span-5">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle>Tenant Data by Building</CardTitle>
+        <Building />
       </CardHeader>
       <CardContent className="space-y-4">
         {data.buildings.map((building, index) => (

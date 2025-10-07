@@ -3,15 +3,17 @@
 import { usePayments } from '@/hooks/use-payments'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Building2 } from 'lucide-react'
 
 export function PaymentsByBuildingChart() {
   const { data, isLoading, error } = usePayments()
 
   if (isLoading) {
     return (
-      <Card className="col-span-1 md:col-span-2 lg:col-span-4">
-        <CardHeader>
+      <Card className="col-span-1 md:col-span-2 lg:col-span-3">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle>Payments by Building</CardTitle>
+          <Building2 />
         </CardHeader>
         <CardContent className="space-y-4">
           <Skeleton className="h-4 w-full" />
@@ -24,9 +26,10 @@ export function PaymentsByBuildingChart() {
 
   if (error) {
     return (
-      <Card className="col-span-1 md:col-span-2 lg:col-span-4">
-        <CardHeader>
+      <Card className="col-span-1 md:col-span-2 lg:col-span-3">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle>Payments by Building</CardTitle>
+          <Building2 />
         </CardHeader>
         <CardContent>
           <p className="text-red-500">Error loading payments data</p>
@@ -37,9 +40,10 @@ export function PaymentsByBuildingChart() {
 
   if (!data || data.buildings.length === 0) {
     return (
-      <Card className="col-span-1 md:col-span-2 lg:col-span-4">
-        <CardHeader>
+      <Card className="col-span-1 md:col-span-2 lg:col-span-3">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle>Payments by Building</CardTitle>
+          <Building2 />
         </CardHeader>
         <CardContent>
           <p className="text-gray-500">No payment data available</p>
@@ -56,9 +60,10 @@ export function PaymentsByBuildingChart() {
   }
 
   return (
-    <Card className="col-span-1 md:col-span-2 lg:col-span-4">
-      <CardHeader>
+    <Card className="col-span-1 md:col-span-2 lg:col-span-3">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle>Payments by Building</CardTitle>
+        <Building2 />
       </CardHeader>
       <CardContent className="space-y-4">
         {data.buildings.map((building, index) => (

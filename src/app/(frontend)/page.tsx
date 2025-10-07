@@ -1,8 +1,10 @@
 import { ExpensesChart } from '@/components/charts/expenses-chart'
 import { DieselExpensesChart } from '@/components/charts/diesel-expenses-chart'
 import { DieselAmountChart } from '@/components/charts/diesel-amount-chart'
+import { CurrentMonthDieselLiters } from '@/components/charts/current-month-diesel-liters'
 import { PaymentsByBuildingChart } from '@/components/charts/payments-by-building-chart'
 import { TenantsByBuildingChart } from '@/components/charts/tenants-by-building-chart'
+import { GeneratorExpensesByCategoryChart } from '@/components/charts/generator-expenses-by-category-chart'
 
 export default function HomePage() {
   return (
@@ -20,12 +22,16 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Charts Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-8">
+      <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-10">
+        <CurrentMonthDieselLiters />
         <PaymentsByBuildingChart />
         <TenantsByBuildingChart />
+      </div>
+      {/* Charts Grid */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-8">
         <ExpensesChart />
         <DieselExpensesChart />
+        <GeneratorExpensesByCategoryChart />
         <DieselAmountChart />
       </div>
     </div>

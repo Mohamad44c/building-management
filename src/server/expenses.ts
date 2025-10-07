@@ -101,6 +101,38 @@ export async function getDieselExpensesByDateRange(range: DateRange) {
   }
 }
 
+// Get total diesel liters used in the current calendar month
+export async function getCurrentMonthDieselLiters() {
+  try {
+    const now = new Date()
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+
+    const payload = await getPayload({ config: configPromise })
+
+    const expenses = await payload.find({
+      collection: 'diesel-expenses',
+      where: {
+        date: {
+          greater_than_equal: startOfMonth.toISOString(),
+          less_than_equal: now.toISOString(),
+        },
+      },
+      // Ensure all results for the month are included
+      limit: 0,
+    })
+
+    const totalLiters = expenses.docs.reduce((sum, expense: any) => {
+      const liters = Number((expense as any)?.liters) || 0
+      return sum + liters
+    }, 0)
+
+    return totalLiters
+  } catch (error) {
+    console.error('Error calculating current month diesel liters:', error)
+    return 0
+  }
+}
+
 // Get payments by building
 export async function getPaymentsByBuilding() {
   try {
@@ -146,6 +178,118 @@ export async function getPaymentsByBuilding() {
     console.error('Error getting payments by building:', error)
     return {
       buildings: [],
+      grandTotal: 0,
+    }
+  }
+}
+
+// Get generator expenses by date range
+export async function getGeneratorExpensesByDateRange(range: DateRange) {
+  try {
+    const now = new Date()
+    let startDate = new Date()
+
+    switch (range) {
+      case 'month':
+        startDate.setMonth(now.getMonth() - 1)
+        break
+      case 'quarter':
+        startDate.setMonth(now.getMonth() - 3)
+        break
+      case 'year':
+        startDate.setFullYear(now.getFullYear() - 1)
+        break
+    }
+
+    const payload = await getPayload({ config: configPromise })
+
+    const expenses = await payload.find({
+      collection: 'generator-expenses',
+      where: {
+        date: {
+          greater_than_equal: startDate.toISOString(),
+          less_than_equal: now.toISOString(),
+        },
+      },
+      sort: '-date',
+    })
+
+    return expenses.docs
+  } catch (error) {
+    console.error('Error getting generator expenses:', error)
+    return []
+  }
+}
+
+// Get generator expenses by category
+export async function getGeneratorExpensesByCategory(range: DateRange) {
+  try {
+    const now = new Date()
+    let startDate = new Date()
+
+    switch (range) {
+      case 'month':
+        startDate.setMonth(now.getMonth() - 1)
+        break
+      case 'quarter':
+        startDate.setMonth(now.getMonth() - 3)
+        break
+      case 'year':
+        startDate.setFullYear(now.getFullYear() - 1)
+        break
+    }
+
+    const payload = await getPayload({ config: configPromise })
+
+    const expenses = await payload.find({
+      collection: 'generator-expenses',
+      where: {
+        date: {
+          greater_than_equal: startDate.toISOString(),
+          less_than_equal: now.toISOString(),
+        },
+      },
+      sort: '-date',
+    })
+
+    // Group expenses by category
+    const expensesByCategory = expenses.docs.reduce((acc: any, expense: any) => {
+      const category = expense.expenseType
+      if (!acc[category]) {
+        acc[category] = {
+          category,
+          totalAmount: 0,
+          count: 0,
+          expenses: [],
+        }
+      }
+
+      acc[category].totalAmount += expense.amount || 0
+      acc[category].count += 1
+      acc[category].expenses.push(expense)
+
+      return acc
+    }, {})
+
+    // Convert to array and sort by total amount
+    const categoryData = Object.values(expensesByCategory).sort(
+      (a: any, b: any) => b.totalAmount - a.totalAmount,
+    )
+
+    // Calculate grand total
+    const grandTotal = categoryData.reduce(
+      (sum: number, category: any) => sum + category.totalAmount,
+      0,
+    )
+
+    return {
+      categories: categoryData,
+      grandTotal,
+    }
+  } catch (error) {
+    console.error('Error getting generator expenses by category:', error)
+    return {
+      categories: [],
       grandTotal: 0,
     }
   }
