@@ -48,11 +48,11 @@ export function DieselExpensesChart() {
               <YAxis yAxisId="right" orientation="right" />
               <Tooltip />
               <Legend />
-              <Bar yAxisId="left" dataKey="totalAmount" fill="#98bad5" name="Total Amount ($)" />
+              <Bar yAxisId="left" dataKey="totalAmount" fill="#388BFF" name="Total Amount ($)" />
               <Bar
                 yAxisId="right"
                 dataKey="liters"
-                fill="#82ca9d"
+                fill="#155e75"
                 name="Diesel (Thousand Liters)"
               />
             </BarChart>

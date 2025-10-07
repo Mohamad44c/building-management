@@ -47,7 +47,7 @@ export function ExpensesChart() {
               <YAxis />
               <Tooltip />
               <Legend />
-              <Bar dataKey="amount" fill="#98bad5" name="Amount ($)" />
+              <Bar dataKey="amount" fill="#1192e8" name="Amount ($)" />
             </BarChart>
           </ResponsiveContainer>
         )}

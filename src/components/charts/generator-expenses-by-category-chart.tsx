@@ -53,7 +53,7 @@ export function GeneratorExpensesByCategoryChart() {
               <YAxis />
               <Tooltip />
               <Legend />
-              <Bar dataKey="totalAmount" fill="#f59e0b" name="Total Amount ($)" />
+              <Bar dataKey="totalAmount" fill="#1192e8" name="Total Amount ($)" />
             </BarChart>
           </ResponsiveContainer>
         )}
@@ -61,4 +61,3 @@ export function GeneratorExpensesByCategoryChart() {
     </Card>
   )
 }
-

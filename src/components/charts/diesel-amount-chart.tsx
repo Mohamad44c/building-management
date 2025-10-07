@@ -46,7 +46,7 @@ export function DieselAmountChart() {
                 formatter={(value) => [`$${Number(value).toLocaleString()}`, 'Amount']}
                 labelFormatter={(label) => `Date: ${label}`}
               />
-              <Bar dataKey="amount" fill="#98bad5" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="amount" fill="#1192e8" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         )}
