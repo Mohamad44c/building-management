@@ -1,7 +1,7 @@
 'use client'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { DateRangeFilter, type DateRange } from '@/components/ui/date-range-filter'
+import { DateRangeFilter } from '@/components/ui/date-range-filter'
 import { useExpenses } from '@/hooks/use-expenses'
 import { useState } from 'react'
 import {
@@ -17,8 +17,9 @@ import {
 import { Expense } from '@/payload-types'
 
 export function ExpensesChart() {
-  const [dateRange, setDateRange] = useState<DateRange>('month')
-  const { data: expenses, isLoading } = useExpenses(dateRange)
+  const currentMonth = new Date().getMonth()
+  const [selectedMonth, setSelectedMonth] = useState<number>(currentMonth)
+  const { data: expenses, isLoading } = useExpenses(selectedMonth)
 
   const chartData = expenses?.map((expense: Expense) => ({
     date: new Date(expense.date).toLocaleDateString('en-US', {
@@ -34,7 +35,7 @@ export function ExpensesChart() {
     <Card className="col-span-4">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle>Expenses Overview</CardTitle>
-        <DateRangeFilter onRangeChange={setDateRange} defaultValue={dateRange} />
+        <DateRangeFilter onMonthChange={setSelectedMonth} defaultValue={selectedMonth} />
       </CardHeader>
       <CardContent>
         {isLoading ? (

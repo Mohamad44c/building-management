@@ -7,30 +7,30 @@ import {
 import { useQuery } from '@tanstack/react-query'
 import type { DateRange } from '@/components/ui/date-range-filter'
 
-export function useExpenses(range: DateRange) {
+export function useExpenses(monthIndex?: number) {
   return useQuery({
-    queryKey: ['expenses', range],
-    queryFn: () => getExpensesByDateRange(range),
+    queryKey: ['expenses', monthIndex],
+    queryFn: () => getExpensesByDateRange('month', monthIndex),
   })
 }
 
-export function useDieselExpenses(range: DateRange) {
+export function useDieselExpenses(monthIndex?: number) {
   return useQuery({
-    queryKey: ['diesel-expenses', range],
-    queryFn: () => getDieselExpensesByDateRange(range),
+    queryKey: ['diesel-expenses', monthIndex],
+    queryFn: () => getDieselExpensesByDateRange('month', monthIndex),
   })
 }
 
-export function useGeneratorExpenses(range: DateRange) {
+export function useGeneratorExpenses(monthIndex?: number) {
   return useQuery({
-    queryKey: ['generator-expenses', range],
-    queryFn: () => getGeneratorExpensesByDateRange(range),
+    queryKey: ['generator-expenses', monthIndex],
+    queryFn: () => getGeneratorExpensesByDateRange('month', monthIndex),
   })
 }
 
-export function useGeneratorExpensesByCategory(range: DateRange) {
+export function useGeneratorExpensesByCategory(monthIndex?: number) {
   return useQuery({
-    queryKey: ['generator-expenses-by-category', range],
-    queryFn: () => getGeneratorExpensesByCategory(range),
+    queryKey: ['generator-expenses-by-category', monthIndex],
+    queryFn: () => getGeneratorExpensesByCategory('month', monthIndex),
   })
 }

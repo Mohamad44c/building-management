@@ -1,15 +1,16 @@
 'use client'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { DateRangeFilter, type DateRange } from '@/components/ui/date-range-filter'
+import { DateRangeFilter } from '@/components/ui/date-range-filter'
 import { useDieselExpenses } from '@/hooks/use-expenses'
 import { useState } from 'react'
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { DieselExpense } from '@/payload-types'
 
 export function DieselAmountChart() {
-  const [dateRange, setDateRange] = useState<DateRange>('month')
-  const { data: expenses, isLoading } = useDieselExpenses(dateRange)
+  const currentMonth = new Date().getMonth()
+  const [selectedMonth, setSelectedMonth] = useState<number>(currentMonth)
+  const { data: expenses, isLoading } = useDieselExpenses(selectedMonth)
 
   const chartData = expenses?.map((expense: DieselExpense) => ({
     date: new Date(expense.date).toLocaleDateString('en-US', {
@@ -27,7 +28,7 @@ export function DieselAmountChart() {
     <Card className="col-span-4">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle>Diesel Expenses Amount</CardTitle>
-        <DateRangeFilter onRangeChange={setDateRange} defaultValue={dateRange} />
+        <DateRangeFilter onMonthChange={setSelectedMonth} defaultValue={selectedMonth} />
       </CardHeader>
       <CardContent>
         <div className="mb-4">

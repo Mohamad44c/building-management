@@ -25,14 +25,19 @@ export async function getCurrentUser() {
 }
 
 // Get expenses by date range
-export async function getExpensesByDateRange(range: DateRange) {
+export async function getExpensesByDateRange(range: DateRange, monthIndex?: number) {
   try {
     const now = new Date()
     let startDate = new Date()
+    let endDate = new Date()
 
     switch (range) {
       case 'month':
-        startDate.setMonth(now.getMonth() - 1)
+        // Show specific month (default to current month if no monthIndex provided)
+        const targetMonth = monthIndex !== undefined ? monthIndex : now.getMonth()
+        const targetYear = now.getFullYear()
+        startDate = new Date(targetYear, targetMonth, 1)
+        endDate = new Date(targetYear, targetMonth + 1, 0, 23, 59, 59, 999)
         break
       case 'quarter':
         startDate.setMonth(now.getMonth() - 3)
@@ -49,10 +54,10 @@ export async function getExpensesByDateRange(range: DateRange) {
       where: {
         date: {
           greater_than_equal: startDate.toISOString(),
-          less_than_equal: now.toISOString(),
+          less_than_equal: endDate.toISOString(),
         },
       },
-      sort: '-date',
+      sort: 'date',
     })
 
     console.log('Expenses', expenses.docs)
@@ -64,14 +69,19 @@ export async function getExpensesByDateRange(range: DateRange) {
 }
 
 // Get diesel expenses by date range
-export async function getDieselExpensesByDateRange(range: DateRange) {
+export async function getDieselExpensesByDateRange(range: DateRange, monthIndex?: number) {
   try {
     const now = new Date()
     let startDate = new Date()
+    let endDate = new Date()
 
     switch (range) {
       case 'month':
-        startDate.setMonth(now.getMonth() - 1)
+        // Show specific month (default to current month if no monthIndex provided)
+        const targetMonth = monthIndex !== undefined ? monthIndex : now.getMonth()
+        const targetYear = now.getFullYear()
+        startDate = new Date(targetYear, targetMonth, 1)
+        endDate = new Date(targetYear, targetMonth + 1, 0, 23, 59, 59, 999)
         break
       case 'quarter':
         startDate.setMonth(now.getMonth() - 3)
@@ -88,10 +98,10 @@ export async function getDieselExpensesByDateRange(range: DateRange) {
       where: {
         date: {
           greater_than_equal: startDate.toISOString(),
-          less_than_equal: now.toISOString(),
+          less_than_equal: endDate.toISOString(),
         },
       },
-      sort: '-date',
+      sort: 'date',
     })
 
     return expenses.docs
@@ -148,7 +158,7 @@ export async function getPaymentsByBuilding() {
     const payments = await payload.find({
       collection: 'payments',
       depth: 2,
-      sort: '-date',
+      sort: 'date',
     })
 
     // Calculate totals by building
@@ -184,14 +194,19 @@ export async function getPaymentsByBuilding() {
 }
 
 // Get generator expenses by date range
-export async function getGeneratorExpensesByDateRange(range: DateRange) {
+export async function getGeneratorExpensesByDateRange(range: DateRange, monthIndex?: number) {
   try {
     const now = new Date()
     let startDate = new Date()
+    let endDate = new Date()
 
     switch (range) {
       case 'month':
-        startDate.setMonth(now.getMonth() - 1)
+        // Show specific month (default to current month if no monthIndex provided)
+        const targetMonth = monthIndex !== undefined ? monthIndex : now.getMonth()
+        const targetYear = now.getFullYear()
+        startDate = new Date(targetYear, targetMonth, 1)
+        endDate = new Date(targetYear, targetMonth + 1, 0, 23, 59, 59, 999)
         break
       case 'quarter':
         startDate.setMonth(now.getMonth() - 3)
@@ -208,10 +223,10 @@ export async function getGeneratorExpensesByDateRange(range: DateRange) {
       where: {
         date: {
           greater_than_equal: startDate.toISOString(),
-          less_than_equal: now.toISOString(),
+          less_than_equal: endDate.toISOString(),
         },
       },
-      sort: '-date',
+      sort: 'date',
     })
 
     return expenses.docs
@@ -222,14 +237,19 @@ export async function getGeneratorExpensesByDateRange(range: DateRange) {
 }
 
 // Get generator expenses by category
-export async function getGeneratorExpensesByCategory(range: DateRange) {
+export async function getGeneratorExpensesByCategory(range: DateRange, monthIndex?: number) {
   try {
     const now = new Date()
     let startDate = new Date()
+    let endDate = new Date()
 
     switch (range) {
       case 'month':
-        startDate.setMonth(now.getMonth() - 1)
+        // Show specific month (default to current month if no monthIndex provided)
+        const targetMonth = monthIndex !== undefined ? monthIndex : now.getMonth()
+        const targetYear = now.getFullYear()
+        startDate = new Date(targetYear, targetMonth, 1)
+        endDate = new Date(targetYear, targetMonth + 1, 0, 23, 59, 59, 999)
         break
       case 'quarter':
         startDate.setMonth(now.getMonth() - 3)
@@ -246,10 +266,10 @@ export async function getGeneratorExpensesByCategory(range: DateRange) {
       where: {
         date: {
           greater_than_equal: startDate.toISOString(),
-          less_than_equal: now.toISOString(),
+          less_than_equal: endDate.toISOString(),
         },
       },
-      sort: '-date',
+      sort: 'date',
     })
 
     // Group expenses by category

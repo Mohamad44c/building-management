@@ -1,7 +1,7 @@
 'use client'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { DateRangeFilter, type DateRange } from '@/components/ui/date-range-filter'
+import { DateRangeFilter } from '@/components/ui/date-range-filter'
 import { useGeneratorExpensesByCategory } from '@/hooks/use-expenses'
 import { useMemo, useState } from 'react'
 import {
@@ -24,8 +24,9 @@ function formatCategoryLabel(value: string) {
 }
 
 export function GeneratorExpensesByCategoryChart() {
-  const [dateRange, setDateRange] = useState<DateRange>('month')
-  const { data, isLoading } = useGeneratorExpensesByCategory(dateRange)
+  const currentMonth = new Date().getMonth()
+  const [selectedMonth, setSelectedMonth] = useState<number>(currentMonth)
+  const { data, isLoading } = useGeneratorExpensesByCategory(selectedMonth)
 
   const chartData = useMemo(() => {
     const categories = data?.categories ?? []
@@ -40,7 +41,7 @@ export function GeneratorExpensesByCategoryChart() {
     <Card className="col-span-4">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle>Generator Expenses by Category</CardTitle>
-        <DateRangeFilter onRangeChange={setDateRange} defaultValue={dateRange} />
+        <DateRangeFilter onMonthChange={setSelectedMonth} defaultValue={selectedMonth} />
       </CardHeader>
       <CardContent>
         {isLoading ? (
