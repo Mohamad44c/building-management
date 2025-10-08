@@ -12,6 +12,7 @@ import { ExpenseCategories } from './collections/ExpenseCategories'
 import { Expenses } from './collections/Expenses'
 import { DieselExpenses } from './collections/DieselExpenses'
 import { GeneratorExpenses } from './collections/GeneratorExpenses'
+import { GeneratorHours } from './collections/GeneratorHours'
 import { Buildings } from './collections/Buildings'
 import { Tenants } from './collections/Tenants'
 import { Payments } from './collections/Payments'
@@ -30,6 +31,7 @@ export default buildConfig({
     Expenses,
     DieselExpenses,
     GeneratorExpenses,
+    GeneratorHours,
     Payments,
     ExpenseCategories,
     Buildings,

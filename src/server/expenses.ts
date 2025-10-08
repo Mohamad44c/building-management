@@ -405,3 +405,73 @@ export async function getTenantsByBuilding() {
     }
   }
 }
+
+// Get generator hours by day
+export async function getGeneratorHoursByDay(range: DateRange, monthIndex?: number) {
+  try {
+    const now = new Date()
+    let startDate = new Date()
+    let endDate = new Date()
+
+    switch (range) {
+      case 'month':
+        // Show specific month (default to current month if no monthIndex provided)
+        const targetMonth = monthIndex !== undefined ? monthIndex : now.getMonth()
+        const targetYear = now.getFullYear()
+        startDate = new Date(targetYear, targetMonth, 1)
+        endDate = new Date(targetYear, targetMonth + 1, 0, 23, 59, 59, 999)
+        break
+      case 'quarter':
+        startDate.setMonth(now.getMonth() - 3)
+        break
+      case 'year':
+        startDate.setFullYear(now.getFullYear() - 1)
+        break
+    }
+
+    const payload = await getPayload({ config: configPromise })
+
+    const hours = await payload.find({
+      collection: 'generator-hours',
+      where: {
+        date: {
+          greater_than_equal: startDate.toISOString(),
+          less_than_equal: endDate.toISOString(),
+        },
+      },
+      sort: 'date',
+      limit: 0,
+    })
+
+    // Group by day and sum hours
+    const hoursByDay = hours.docs.reduce((acc: any, reading: any) => {
+      const date = new Date(reading.date)
+      const dayKey = date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+      })
+
+      if (!acc[dayKey]) {
+        acc[dayKey] = {
+          date: dayKey,
+          hoursRun: 0,
+          meterReading: reading.meterReading,
+          readingCount: 0,
+        }
+      }
+
+      acc[dayKey].hoursRun += reading.hoursRun || 0
+      acc[dayKey].readingCount += 1
+      // Keep the latest meter reading for the day
+      acc[dayKey].meterReading = reading.meterReading
+
+      return acc
+    }, {})
+
+    return Object.values(hoursByDay)
+  } catch (error) {
+    console.error('Error getting generator hours by day:', error)
+    return []
+  }
+}

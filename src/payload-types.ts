@@ -70,6 +70,7 @@ export interface Config {
     expenses: Expense;
     'diesel-expenses': DieselExpense;
     'generator-expenses': GeneratorExpense;
+    'generator-hours': GeneratorHour;
     payments: Payment;
     'expense-categories': ExpenseCategory;
     buildings: Building;
@@ -84,6 +85,7 @@ export interface Config {
     expenses: ExpensesSelect<false> | ExpensesSelect<true>;
     'diesel-expenses': DieselExpensesSelect<false> | DieselExpensesSelect<true>;
     'generator-expenses': GeneratorExpensesSelect<false> | GeneratorExpensesSelect<true>;
+    'generator-hours': GeneratorHoursSelect<false> | GeneratorHoursSelect<true>;
     payments: PaymentsSelect<false> | PaymentsSelect<true>;
     'expense-categories': ExpenseCategoriesSelect<false> | ExpenseCategoriesSelect<true>;
     buildings: BuildingsSelect<false> | BuildingsSelect<true>;
@@ -190,6 +192,31 @@ export interface GeneratorExpense {
   date: string;
   /**
    * Additional notes about this expense
+   */
+  notes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "generator-hours".
+ */
+export interface GeneratorHour {
+  id: number;
+  /**
+   * Current cumulative hours on the generator meter (e.g., 27000)
+   */
+  meterReading: number;
+  /**
+   * Date and time of this reading
+   */
+  date: string;
+  /**
+   * Hours run since last reading (automatically calculated)
+   */
+  hoursRun?: number | null;
+  /**
+   * Optional notes about this reading
    */
   notes?: string | null;
   updatedAt: string;
@@ -310,6 +337,10 @@ export interface PayloadLockedDocument {
         value: number | GeneratorExpense;
       } | null)
     | ({
+        relationTo: 'generator-hours';
+        value: number | GeneratorHour;
+      } | null)
+    | ({
         relationTo: 'payments';
         value: number | Payment;
       } | null)
@@ -405,6 +436,18 @@ export interface GeneratorExpensesSelect<T extends boolean = true> {
   hours?: T;
   amount?: T;
   date?: T;
+  notes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "generator-hours_select".
+ */
+export interface GeneratorHoursSelect<T extends boolean = true> {
+  meterReading?: T;
+  date?: T;
+  hoursRun?: T;
   notes?: T;
   updatedAt?: T;
   createdAt?: T;

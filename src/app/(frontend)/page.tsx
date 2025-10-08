@@ -5,6 +5,7 @@ import { CurrentMonthDieselLiters } from '@/components/charts/current-month-dies
 import { PaymentsByBuildingChart } from '@/components/charts/payments-by-building-chart'
 import { TenantsByBuildingChart } from '@/components/charts/tenants-by-building-chart'
 import { GeneratorExpensesByCategoryChart } from '@/components/charts/generator-expenses-by-category-chart'
+import { GeneratorHoursByDayChart } from '@/components/charts/generator-hours-by-day-chart'
 import { ThemeToggle } from '@/components/theme-toggle'
 
 export default function HomePage() {
@@ -35,6 +36,7 @@ export default function HomePage() {
         <DieselExpensesChart />
         <GeneratorExpensesByCategoryChart />
         <DieselAmountChart />
+        <GeneratorHoursByDayChart />
       </div>
     </div>
   )
