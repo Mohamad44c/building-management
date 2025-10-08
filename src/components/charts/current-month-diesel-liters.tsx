@@ -1,27 +1,32 @@
 'use client'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { getCurrentMonthDieselLiters } from '@/server/expenses'
+import { getCurrentMonthDieselLiters, getCurrentMonthDieselExpenses } from '@/server/expenses'
 import { Fuel } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 export function CurrentMonthDieselLiters() {
   const [totalLiters, setTotalLiters] = useState<number>(0)
+  const [totalAmount, setTotalAmount] = useState<number>(0)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    const fetchDieselLiters = async () => {
+    const fetchDieselData = async () => {
       try {
-        const liters = await getCurrentMonthDieselLiters()
+        const [liters, amount] = await Promise.all([
+          getCurrentMonthDieselLiters(),
+          getCurrentMonthDieselExpenses(),
+        ])
         setTotalLiters(liters)
+        setTotalAmount(amount)
       } catch (error) {
-        console.error('Error fetching diesel liters:', error)
+        console.error('Error fetching diesel data:', error)
       } finally {
         setIsLoading(false)
       }
     }
 
-    fetchDieselLiters()
+    fetchDieselData()
   }, [])
 
   if (isLoading) {
@@ -45,8 +50,16 @@ export function CurrentMonthDieselLiters() {
         <Fuel className="size-4" />
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold">{totalLiters.toFixed(1)} L</div>
-        <p className="text-xs text-muted-foreground">Total liters consumed this month</p>
+        <div className="space-y-3">
+          <div>
+            <div className="text-2xl font-bold">{totalLiters.toFixed(1)} L</div>
+            <p className="text-xs text-muted-foreground">Total liters consumed</p>
+          </div>
+          <div>
+            <div className="text-2xl font-bold">${totalAmount.toFixed(2)}</div>
+            <p className="text-xs text-muted-foreground">Total amount spent</p>
+          </div>
+        </div>
       </CardContent>
     </Card>
   )

@@ -143,6 +143,38 @@ export async function getCurrentMonthDieselLiters() {
   }
 }
 
+// Get total diesel expenses (amount spent) in the current calendar month
+export async function getCurrentMonthDieselExpenses() {
+  try {
+    const now = new Date()
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+
+    const payload = await getPayload({ config: configPromise })
+
+    const expenses = await payload.find({
+      collection: 'diesel-expenses',
+      where: {
+        date: {
+          greater_than_equal: startOfMonth.toISOString(),
+          less_than_equal: now.toISOString(),
+        },
+      },
+      // Ensure all results for the month are included
+      limit: 0,
+    })
+
+    const totalAmount = expenses.docs.reduce((sum, expense: any) => {
+      const amount = Number((expense as any)?.totalAmount) || 0
+      return sum + amount
+    }, 0)
+
+    return totalAmount
+  } catch (error) {
+    console.error('Error calculating current month diesel expenses:', error)
+    return 0
+  }
+}
+
 // Get Building Payments
 export async function getPaymentsByBuilding() {
   try {
