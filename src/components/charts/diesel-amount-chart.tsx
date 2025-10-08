@@ -36,24 +36,29 @@ export function DieselAmountChart() {
   const totalAmount = expenses?.reduce((sum, expense) => sum + (expense.totalAmount || 0), 0) || 0
 
   return (
-    <Card className="col-span-4">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle>Diesel Expenses Amount</CardTitle>
+    <Card className="md:col-span-2 lg:col-span-4">
+      <CardHeader className="flex flex-col gap-2 space-y-0 pb-2 sm:flex-row sm:items-center sm:justify-between">
+        <CardTitle className="text-sm font-medium sm:text-base">Diesel Expenses Amount</CardTitle>
         <DateRangeFilter onMonthChange={setSelectedMonth} defaultValue={selectedMonth} />
       </CardHeader>
       <CardContent>
-        <div className="mb-4">
-          <div className="text-2xl font-bold">${totalAmount.toLocaleString()}</div>
+        <div className="mb-3 sm:mb-4">
+          <div className="text-xl font-bold sm:text-2xl">${totalAmount.toLocaleString()}</div>
           <p className="text-xs text-muted-foreground">Total diesel expenses</p>
         </div>
         {isLoading ? (
-          <div className="flex h-[300px] items-center justify-center">Loading...</div>
+          <div className="flex h-[200px] items-center justify-center sm:h-[250px] lg:h-[300px]">
+            Loading...
+          </div>
         ) : (
-          <ChartContainer config={chartConfig} className="h-[300px] w-full">
+          <ChartContainer
+            config={chartConfig}
+            className="h-[200px] w-full sm:h-[250px] lg:h-[300px]"
+          >
             <BarChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
-              <XAxis dataKey="date" tickLine={false} axisLine={false} />
-              <YAxis tickLine={false} axisLine={false} />
+              <XAxis dataKey="date" tickLine={false} axisLine={false} fontSize={12} />
+              <YAxis tickLine={false} axisLine={false} fontSize={12} />
               <ChartTooltip
                 content={<ChartTooltipContent />}
                 formatter={(value) => [`$${Number(value).toLocaleString()}`, 'Amount']}

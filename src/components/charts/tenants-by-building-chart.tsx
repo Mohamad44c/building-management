@@ -10,9 +10,11 @@ export function TenantsByBuildingChart() {
 
   if (isLoading) {
     return (
-      <Card className="col-span-1 md:col-span-2 lg:col-span-5">
+      <Card className="md:col-span-2 lg:col-span-5">
         <CardHeader>
-          <CardTitle>Tenant Data by Building</CardTitle>
+          <CardTitle className="text-sm font-medium sm:text-base">
+            Tenant Data by Building
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <Skeleton className="h-4 w-full" />
@@ -25,9 +27,11 @@ export function TenantsByBuildingChart() {
 
   if (error) {
     return (
-      <Card className="col-span-1 md:col-span-2 lg:col-span-5">
+      <Card className="md:col-span-2 lg:col-span-5">
         <CardHeader>
-          <CardTitle>Tenant Data by Building</CardTitle>
+          <CardTitle className="text-sm font-medium sm:text-base">
+            Tenant Data by Building
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-destructive">Error loading tenant data</p>
@@ -38,9 +42,11 @@ export function TenantsByBuildingChart() {
 
   if (!data || data.buildings.length === 0) {
     return (
-      <Card className="col-span-1 md:col-span-2 lg:col-span-5">
+      <Card className="md:col-span-2 lg:col-span-5">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle>Tenant Data by Building</CardTitle>
+          <CardTitle className="text-sm font-medium sm:text-base">
+            Tenant Data by Building
+          </CardTitle>
           <Building />
         </CardHeader>
         <CardContent>
@@ -58,30 +64,30 @@ export function TenantsByBuildingChart() {
   }
 
   return (
-    <Card className="col-span-1 md:col-span-2 lg:col-span-5">
+    <Card className="md:col-span-2 lg:col-span-5">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle>Tenant Data by Building</CardTitle>
-        <Building />
+        <CardTitle className="text-sm font-medium sm:text-base">Tenant Data by Building</CardTitle>
+        <Building className="size-4" />
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-3 sm:space-y-4">
         {data.buildings.map((building, index) => (
           <div
             key={building.id}
-            className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
+            className="flex flex-col gap-3 rounded-lg bg-muted/50 p-3 sm:flex-row sm:items-center sm:justify-between"
           >
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-chart-2/20 rounded-full flex items-center justify-center">
-                <span className="text-chart-2 font-semibold text-sm">{index + 1}</span>
+              <div className="flex size-8 items-center justify-center rounded-full bg-chart-2/20">
+                <span className="text-sm font-semibold text-chart-2">{index + 1}</span>
               </div>
               <div>
-                <p className="font-medium">{building.name}</p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm font-medium sm:text-base">{building.name}</p>
+                <p className="text-xs text-muted-foreground sm:text-sm">
                   {building.tenantCount} tenant{building.tenantCount !== 1 ? 's' : ''}
                 </p>
               </div>
             </div>
-            <div className="text-right space-y-1">
-              <div className="flex items-center space-x-4">
+            <div className="space-y-1">
+              <div className="flex items-center gap-3 sm:gap-4">
                 <div className="text-center">
                   <p className="text-xs text-muted-foreground">Total Amps</p>
                   <p className="text-sm font-semibold">{building.totalAmps}A</p>
@@ -104,19 +110,19 @@ export function TenantsByBuildingChart() {
         ))}
 
         {/* Grand Totals */}
-        <div className="border-t pt-4 mt-4">
-          <div className="flex items-center justify-between p-3 bg-chart-2/10 rounded-lg border border-chart-2/20">
+        <div className="mt-4 border-t pt-4">
+          <div className="flex flex-col gap-3 rounded-lg border border-chart-2/20 bg-chart-2/10 p-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-chart-2 rounded-full flex items-center justify-center">
-                <span className="text-white dark:text-background font-semibold text-sm">Σ</span>
+              <div className="flex size-8 items-center justify-center rounded-full bg-chart-2">
+                <span className="text-sm font-semibold text-white dark:text-background">Σ</span>
               </div>
               <div>
-                <p className="font-semibold">Total of All Buildings</p>
-                <p className="text-sm text-muted-foreground">Combined totals</p>
+                <p className="text-sm font-semibold sm:text-base">Total of All Buildings</p>
+                <p className="text-xs text-muted-foreground sm:text-sm">Combined totals</p>
               </div>
             </div>
-            <div className="text-right space-y-1">
-              <div className="flex items-center space-x-4">
+            <div className="space-y-1">
+              <div className="flex items-center gap-3 sm:gap-4">
                 <div className="text-center">
                   <p className="text-xs text-muted-foreground">Total Amps</p>
                   <p className="text-sm font-bold">{data.grandTotalAmps}A</p>

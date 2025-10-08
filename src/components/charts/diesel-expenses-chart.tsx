@@ -47,21 +47,38 @@ export function DieselExpensesChart() {
   }))
 
   return (
-    <Card className="col-span-4">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle>Diesel Expenses Overview</CardTitle>
+    <Card className="md:col-span-2 lg:col-span-4">
+      <CardHeader className="flex flex-col gap-2 space-y-0 pb-2 sm:flex-row sm:items-center sm:justify-between">
+        <CardTitle className="text-sm font-medium sm:text-base">Diesel Expenses Overview</CardTitle>
         <DateRangeFilter onMonthChange={setSelectedMonth} defaultValue={selectedMonth} />
       </CardHeader>
       <CardContent>
         {isLoading ? (
-          <div className="flex h-[350px] items-center justify-center">Loading...</div>
+          <div className="flex h-[250px] items-center justify-center sm:h-[300px] lg:h-[350px]">
+            Loading...
+          </div>
         ) : (
-          <ChartContainer config={chartConfig} className="h-[350px] w-full">
+          <ChartContainer
+            config={chartConfig}
+            className="h-[250px] w-full sm:h-[300px] lg:h-[350px]"
+          >
             <BarChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
-              <XAxis dataKey="date" tickLine={false} axisLine={false} />
-              <YAxis yAxisId="left" orientation="left" tickLine={false} axisLine={false} />
-              <YAxis yAxisId="right" orientation="right" tickLine={false} axisLine={false} />
+              <XAxis dataKey="date" tickLine={false} axisLine={false} fontSize={12} />
+              <YAxis
+                yAxisId="left"
+                orientation="left"
+                tickLine={false}
+                axisLine={false}
+                fontSize={12}
+              />
+              <YAxis
+                yAxisId="right"
+                orientation="right"
+                tickLine={false}
+                axisLine={false}
+                fontSize={12}
+              />
               <ChartTooltip content={<ChartTooltipContent />} />
               <ChartLegend content={<ChartLegendContent />} />
               <Bar
