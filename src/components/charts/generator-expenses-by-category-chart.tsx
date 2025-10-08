@@ -4,18 +4,26 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { DateRangeFilter } from '@/components/ui/date-range-filter'
 import { useGeneratorExpensesByCategory } from '@/hooks/use-expenses'
 import { useMemo, useState } from 'react'
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Legend,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts'
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  ChartLegend,
+  ChartLegendContent,
+} from '@/components/ui/chart'
 
-function formatCategoryLabel(value: string) {
+const chartConfig = {
+  totalAmount: {
+    label: 'Total Amount ($)',
+    theme: {
+      light: 'oklch(0.488 0.243 264.376)',
+      dark: 'oklch(0.488 0.243 264.376)',
+    },
+  },
+}
+
+const formatCategoryLabel = (value: string) => {
   if (!value) return ''
   return value
     .split('-')
@@ -47,16 +55,16 @@ export function GeneratorExpensesByCategoryChart() {
         {isLoading ? (
           <div className="flex h-[350px] items-center justify-center">Loading...</div>
         ) : (
-          <ResponsiveContainer width="100%" height={350}>
+          <ChartContainer config={chartConfig} className="h-[350px] w-full">
             <BarChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="category" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="totalAmount" fill="#1192e8" name="Total Amount ($)" />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} />
+              <XAxis dataKey="category" tickLine={false} axisLine={false} />
+              <YAxis tickLine={false} axisLine={false} />
+              <ChartTooltip content={<ChartTooltipContent />} />
+              <ChartLegend content={<ChartLegendContent />} />
+              <Bar dataKey="totalAmount" fill="var(--color-totalAmount)" radius={4} />
             </BarChart>
-          </ResponsiveContainer>
+          </ChartContainer>
         )}
       </CardContent>
     </Card>

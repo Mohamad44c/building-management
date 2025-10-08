@@ -5,20 +5,22 @@ import { CurrentMonthDieselLiters } from '@/components/charts/current-month-dies
 import { PaymentsByBuildingChart } from '@/components/charts/payments-by-building-chart'
 import { TenantsByBuildingChart } from '@/components/charts/tenants-by-building-chart'
 import { GeneratorExpensesByCategoryChart } from '@/components/charts/generator-expenses-by-category-chart'
+import { ThemeToggle } from '@/components/theme-toggle'
 
 export default function HomePage() {
   return (
     <div className="space-y-8 p-8">
       {/* Header Section */}
       <div className="space-y-4">
-        <div className="space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight text-gray-900">
-            Building Management Dashboard
-          </h1>
-          <p className="text-lg text-gray-600">
-            Monitor expenses, diesel consumption, and payments across your building portfolio with
-            comprehensive analytics and insights.
-          </p>
+        <div className="flex items-start justify-between">
+          <div className="space-y-2">
+            <h1 className="text-3xl font-bold tracking-tight">Building Management Dashboard</h1>
+            <p className="text-lg text-muted-foreground">
+              Monitor expenses, diesel consumption, and payments across your building portfolio with
+              comprehensive analytics and insights.
+            </p>
+          </div>
+          <ThemeToggle />
         </div>
       </div>
 

@@ -4,8 +4,19 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { DateRangeFilter } from '@/components/ui/date-range-filter'
 import { useDieselExpenses } from '@/hooks/use-expenses'
 import { useState } from 'react'
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 import { DieselExpense } from '@/payload-types'
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
+
+const chartConfig = {
+  amount: {
+    label: 'Amount',
+    theme: {
+      light: 'oklch(0.488 0.243 264.376)',
+      dark: 'oklch(0.488 0.243 264.376)',
+    },
+  },
+}
 
 export function DieselAmountChart() {
   const currentMonth = new Date().getMonth()
@@ -38,18 +49,19 @@ export function DieselAmountChart() {
         {isLoading ? (
           <div className="flex h-[300px] items-center justify-center">Loading...</div>
         ) : (
-          <ResponsiveContainer width="100%" height={300}>
+          <ChartContainer config={chartConfig} className="h-[300px] w-full">
             <BarChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" />
-              <YAxis />
-              <Tooltip
+              <CartesianGrid strokeDasharray="3 3" vertical={false} />
+              <XAxis dataKey="date" tickLine={false} axisLine={false} />
+              <YAxis tickLine={false} axisLine={false} />
+              <ChartTooltip
+                content={<ChartTooltipContent />}
                 formatter={(value) => [`$${Number(value).toLocaleString()}`, 'Amount']}
                 labelFormatter={(label) => `Date: ${label}`}
               />
-              <Bar dataKey="amount" fill="#1192e8" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="amount" fill="var(--color-amount)" radius={[4, 4, 0, 0]} />
             </BarChart>
-          </ResponsiveContainer>
+          </ChartContainer>
         )}
       </CardContent>
     </Card>

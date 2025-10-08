@@ -12,7 +12,7 @@ export function PaymentsByBuildingChart() {
     return (
       <Card className="col-span-1 md:col-span-2 lg:col-span-3">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle>Payments by Building</CardTitle>
+          <CardTitle>Building Payments</CardTitle>
           <Building2 />
         </CardHeader>
         <CardContent className="space-y-4">
@@ -28,11 +28,11 @@ export function PaymentsByBuildingChart() {
     return (
       <Card className="col-span-1 md:col-span-2 lg:col-span-3">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle>Payments by Building</CardTitle>
+          <CardTitle>Building Payments</CardTitle>
           <Building2 />
         </CardHeader>
         <CardContent>
-          <p className="text-red-500">Error loading payments data</p>
+          <p className="text-destructive">Error loading payments data</p>
         </CardContent>
       </Card>
     )
@@ -42,11 +42,11 @@ export function PaymentsByBuildingChart() {
     return (
       <Card className="col-span-1 md:col-span-2 lg:col-span-3">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle>Payments by Building</CardTitle>
+          <CardTitle>Building Payments</CardTitle>
           <Building2 />
         </CardHeader>
         <CardContent>
-          <p className="text-gray-500">No payment data available</p>
+          <p className="text-muted-foreground">No payment data available</p>
         </CardContent>
       </Card>
     )
@@ -62,46 +62,44 @@ export function PaymentsByBuildingChart() {
   return (
     <Card className="col-span-1 md:col-span-2 lg:col-span-3">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle>Payments by Building</CardTitle>
+        <CardTitle>Building Payments</CardTitle>
         <Building2 />
       </CardHeader>
       <CardContent className="space-y-4">
         {data.buildings.map((building, index) => (
           <div
             key={building.id}
-            className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+            className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
           >
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                <span className="text-blue-600 font-semibold text-sm">{index + 1}</span>
+              <div className="w-8 h-8 bg-primary/10 dark:bg-primary/20 rounded-full flex items-center justify-center">
+                <span className="text-primary font-semibold text-sm">{index + 1}</span>
               </div>
               <div>
-                <p className="font-medium text-gray-900">{building.name}</p>
-                <p className="text-sm text-gray-500">Building {index + 1}</p>
+                <p className="font-medium">{building.name}</p>
+                <p className="text-sm text-muted-foreground">Building {index + 1}</p>
               </div>
             </div>
             <div className="text-right">
-              <p className="text-lg font-semibold text-gray-900">
-                {formatCurrency(building.total)}
-              </p>
+              <p className="text-lg font-semibold">{formatCurrency(building.total)}</p>
             </div>
           </div>
         ))}
 
         {/* Total of all buildings */}
         <div className="border-t pt-4 mt-4">
-          <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
+          <div className="flex items-center justify-between p-3 bg-primary/5 dark:bg-primary/10 rounded-lg border border-primary/20">
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-                <span className="text-white font-semibold text-sm">Σ</span>
+              <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+                <span className="text-primary-foreground font-semibold text-sm">Σ</span>
               </div>
               <div>
-                <p className="font-semibold text-blue-900">Total of All Buildings</p>
-                <p className="text-sm text-blue-600">Combined total</p>
+                <p className="font-semibold">Total of All Buildings</p>
+                <p className="text-sm text-muted-foreground">Combined total</p>
               </div>
             </div>
             <div className="text-right">
-              <p className="text-xl font-bold text-blue-900">{formatCurrency(data.grandTotal)}</p>
+              <p className="text-xl font-bold">{formatCurrency(data.grandTotal)}</p>
             </div>
           </div>
         </div>

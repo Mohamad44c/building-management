@@ -143,7 +143,7 @@ export async function getCurrentMonthDieselLiters() {
   }
 }
 
-// Get payments by building
+// Get Building Payments
 export async function getPaymentsByBuilding() {
   try {
     const payload = await getPayload({ config: configPromise })
@@ -185,7 +185,7 @@ export async function getPaymentsByBuilding() {
       grandTotal,
     }
   } catch (error) {
-    console.error('Error getting payments by building:', error)
+    console.error('Error getting Building Payments:', error)
     return {
       buildings: [],
       grandTotal: 0,

@@ -4,17 +4,32 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { DateRangeFilter } from '@/components/ui/date-range-filter'
 import { useDieselExpenses } from '@/hooks/use-expenses'
 import { useState } from 'react'
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Legend,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts'
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 import { DieselExpense } from '@/payload-types'
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  ChartLegend,
+  ChartLegendContent,
+} from '@/components/ui/chart'
+
+const chartConfig = {
+  totalAmount: {
+    label: 'Total Amount ($)',
+    theme: {
+      light: 'oklch(0.488 0.243 264.376)',
+      dark: 'oklch(0.488 0.243 264.376)',
+    },
+  },
+  liters: {
+    label: 'Diesel (Thousand Liters)',
+    theme: {
+      light: 'oklch(0.6 0.118 184.704)',
+      dark: 'oklch(0.696 0.17 162.48)',
+    },
+  },
+}
 
 export function DieselExpensesChart() {
   const currentMonth = new Date().getMonth()
@@ -41,23 +56,23 @@ export function DieselExpensesChart() {
         {isLoading ? (
           <div className="flex h-[350px] items-center justify-center">Loading...</div>
         ) : (
-          <ResponsiveContainer width="100%" height={350}>
+          <ChartContainer config={chartConfig} className="h-[350px] w-full">
             <BarChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" />
-              <YAxis yAxisId="left" orientation="left" />
-              <YAxis yAxisId="right" orientation="right" />
-              <Tooltip />
-              <Legend />
-              <Bar yAxisId="left" dataKey="totalAmount" fill="#388BFF" name="Total Amount ($)" />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} />
+              <XAxis dataKey="date" tickLine={false} axisLine={false} />
+              <YAxis yAxisId="left" orientation="left" tickLine={false} axisLine={false} />
+              <YAxis yAxisId="right" orientation="right" tickLine={false} axisLine={false} />
+              <ChartTooltip content={<ChartTooltipContent />} />
+              <ChartLegend content={<ChartLegendContent />} />
               <Bar
-                yAxisId="right"
-                dataKey="liters"
-                fill="#155e75"
-                name="Diesel (Thousand Liters)"
+                yAxisId="left"
+                dataKey="totalAmount"
+                fill="var(--color-totalAmount)"
+                radius={4}
               />
+              <Bar yAxisId="right" dataKey="liters" fill="var(--color-liters)" radius={4} />
             </BarChart>
-          </ResponsiveContainer>
+          </ChartContainer>
         )}
       </CardContent>
     </Card>
