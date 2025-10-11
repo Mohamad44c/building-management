@@ -16,7 +16,7 @@ import { GeneratorHours } from './collections/GeneratorHours'
 import { Buildings } from './collections/Buildings'
 import { Tenants } from './collections/Tenants'
 import { Payments } from './collections/Payments'
-
+ 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
