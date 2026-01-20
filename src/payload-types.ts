@@ -168,6 +168,7 @@ export interface DieselExpense {
    * Total amount in USD
    */
   totalAmount?: number | null;
+  isPaid?: boolean | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -424,6 +425,7 @@ export interface DieselExpensesSelect<T extends boolean = true> {
   pricePerLiter?: T;
   date?: T;
   totalAmount?: T;
+  isPaid?: T;
   updatedAt?: T;
   createdAt?: T;
 }

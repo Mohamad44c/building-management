@@ -1,10 +1,11 @@
 import type { CollectionConfig } from 'payload'
+import { IsPaidCell } from '../components/cells/IsPaidCell'
 
 export const DieselExpenses: CollectionConfig = {
   slug: 'diesel-expenses',
   admin: {
     useAsTitle: 'date',
-    defaultColumns: ['pricePerThousandLiters', 'liters', 'totalAmount', 'date'],
+    defaultColumns: ['pricePerThousandLiters','isPaid', 'liters', 'totalAmount', 'date'],
     group: 'All Expenses',
   },
   fields: [
@@ -73,6 +74,17 @@ export const DieselExpenses: CollectionConfig = {
             return 0
           },
         ],
+      },
+    },
+    {
+      name: 'isPaid',
+      type: 'checkbox',
+      label: 'Is Paid',
+      defaultValue: false,
+      admin: {
+        components: {
+          Cell: IsPaidCell as any,
+        },
       },
     },
   ],
