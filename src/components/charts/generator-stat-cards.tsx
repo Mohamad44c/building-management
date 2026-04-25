@@ -2,7 +2,7 @@
 
 import type { DashboardPeriod } from '@/lib/generatorStats'
 import { useGeneratorDashboardStats } from '@/hooks/use-generator-dashboard-stats'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Fuel, Gauge, ReceiptText, Timer, CalendarDays } from 'lucide-react'
 
 type Props = {
@@ -16,7 +16,7 @@ const formatHours = (value: number) => `${value.toFixed(1)} h`
 
 const renderComparison = (current: number, previous: number, formatter: (value: number) => string) => {
   if (previous <= 0) {
-    return <p className="text-xs text-muted-foreground">No previous period data</p>
+    return <p className="text-sm text-muted-foreground">No previous period data</p>
   }
 
   const delta = current - previous
@@ -24,7 +24,7 @@ const renderComparison = (current: number, previous: number, formatter: (value: 
   const trendClass = delta > 0 ? 'text-destructive' : delta < 0 ? 'text-primary' : 'text-muted-foreground'
 
   return (
-    <p className={`text-xs ${trendClass}`}>
+    <p className={`text-sm ${trendClass}`}>
       {delta >= 0 ? '+' : '-'}
       {formatter(Math.abs(delta))} ({delta >= 0 ? '+' : '-'}
       {Math.abs(percent).toFixed(1)}%) vs previous period
@@ -41,10 +41,10 @@ export function GeneratorStatCards({ period }: Props) {
         {Array.from({ length: 5 }).map((_, index) => (
           <Card key={index}>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Loading...</CardTitle>
+              <CardTitle className="text-base font-medium">Loading...</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground">Preparing stats</p>
+              <p className="text-base text-muted-foreground">Preparing stats</p>
             </CardContent>
           </Card>
         ))}
@@ -56,10 +56,10 @@ export function GeneratorStatCards({ period }: Props) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm font-medium">Generator stats unavailable</CardTitle>
+          <CardTitle className="text-base font-medium">Generator stats unavailable</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-base text-muted-foreground">
             We could not load generator stats for this period. Try another range.
           </p>
         </CardContent>
@@ -73,7 +73,7 @@ export function GeneratorStatCards({ period }: Props) {
     <div className="grid gap-3 sm:gap-4 md:grid-cols-2 xl:grid-cols-5">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle className="text-sm font-medium">Diesel spent</CardTitle>
+          <CardTitle className="text-base font-medium">Diesel spent</CardTitle>
           <Fuel className="size-4" />
         </CardHeader>
         <CardContent className="space-y-1">
@@ -84,36 +84,40 @@ export function GeneratorStatCards({ period }: Props) {
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle className="text-sm font-medium">Diesel received</CardTitle>
+          <CardTitle className="text-base font-medium">Diesel received</CardTitle>
           <Gauge className="size-4" />
         </CardHeader>
         <CardContent className="space-y-1">
           <p className="text-2xl font-bold">{current.dieselLiters.toFixed(1)} L</p>
-          <p className="text-xs text-muted-foreground">{current.dieselTons.toFixed(3)} tons</p>
-          {renderComparison(current.dieselLiters, previous.dieselLiters, (value) => `${value.toFixed(1)} L`)}
+          <p className="text-sm text-muted-foreground">{current.dieselTons.toFixed(3)} tons</p>
+          {renderComparison(
+            current.dieselLiters,
+            previous.dieselLiters,
+            (value) => `${value.toFixed(1)} L`,
+          )}
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle className="text-sm font-medium">Generator runtime</CardTitle>
+          <CardTitle className="text-base font-medium">Generator runtime</CardTitle>
           <Timer className="size-4" />
         </CardHeader>
         <CardContent className="space-y-1">
           <p className="text-2xl font-bold">{formatHours(current.generatorHours)}</p>
-          <p className="text-xs text-muted-foreground">{current.activeDays} active day(s)</p>
+          <p className="text-sm text-muted-foreground">{current.activeDays} active day(s)</p>
           {renderComparison(current.generatorHours, previous.generatorHours, formatHours)}
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle className="text-sm font-medium">Total generator expenses</CardTitle>
+          <CardTitle className="text-base font-medium">Total generator expenses</CardTitle>
           <ReceiptText className="size-4" />
         </CardHeader>
         <CardContent className="space-y-1">
           <p className="text-2xl font-bold">{formatCurrency(current.totalGeneratorExpenses)}</p>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             Diesel + maintenance ({formatCurrency(current.maintenanceCost)} maintenance)
           </p>
           {renderComparison(
@@ -125,20 +129,29 @@ export function GeneratorStatCards({ period }: Props) {
       </Card>
 
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle className="text-sm font-medium">Cost efficiency</CardTitle>
-          <CalendarDays className="size-4" />
+        <CardHeader className="flex flex-row items-start justify-between pb-2">
+          <div className="space-y-1">
+            <CardTitle className="text-base font-medium">Cost efficiency</CardTitle>
+            <CardDescription className="font-mono text-xs">
+              totalGeneratorExpenses = dieselSpent + maintenanceCost
+            </CardDescription>
+          </div>
+          <CalendarDays className="mt-0.5 size-4" />
         </CardHeader>
         <CardContent className="space-y-1">
-          <p className="text-sm font-semibold">
+          <p className="text-base font-semibold">
             Per day:{' '}
-            {current.costPerDay !== null ? formatCurrency(current.costPerDay) : 'Not enough day data'}
+            {current.costPerDay !== null
+              ? formatCurrency(current.costPerDay)
+              : 'Not enough day data'}
           </p>
-          <p className="text-sm font-semibold">
+          <p className="text-base font-semibold">
             Per hour:{' '}
-            {current.costPerHour !== null ? formatCurrency(current.costPerHour) : 'Not enough hour data'}
+            {current.costPerHour !== null
+              ? formatCurrency(current.costPerHour)
+              : 'Not enough hour data'}
           </p>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             Derived from total expense and runtime in selected period.
           </p>
         </CardContent>
