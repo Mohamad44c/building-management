@@ -44,6 +44,10 @@ export type GeneratorDashboardStats = {
   current: GeneratorStatsSnapshot
   previous: GeneratorStatsSnapshot
   timeline: DailyHoursPoint[]
+  estimatedMonthlyCollection: {
+    amount: number | null
+    monthsUsed: number
+  }
 }
 
 const startOfDay = (date: Date): Date =>
@@ -57,6 +61,9 @@ const addDays = (date: Date, days: number): Date => {
   copy.setDate(copy.getDate() + days)
   return copy
 }
+
+const startOfMonth = (date: Date): Date =>
+  new Date(date.getFullYear(), date.getMonth(), 1, 0, 0, 0, 0)
 
 const buildRangeWindow = (period: DashboardPeriod): RangeWindow => {
   const now = new Date()
@@ -182,6 +189,55 @@ const buildTimeline = (hourDocs: any[]): DailyHoursPoint[] => {
     }))
 }
 
+const monthKeyFromDate = (value: string | Date): string => {
+  const date = new Date(value)
+  const year = date.getFullYear()
+  const month = `${date.getMonth() + 1}`.padStart(2, '0')
+  return `${year}-${month}`
+}
+
+const computeEstimatedMonthlyCollection = ({
+  dieselDocs,
+  maintenanceDocs,
+  currentWindowStart,
+}: {
+  dieselDocs: any[]
+  maintenanceDocs: any[]
+  currentWindowStart: Date
+}): { amount: number | null; monthsUsed: number } => {
+  const currentMonthKey = monthKeyFromDate(currentWindowStart)
+  const monthlyTotals = new Map<string, number>()
+
+  for (const doc of dieselDocs) {
+    const key = monthKeyFromDate(doc.date)
+    monthlyTotals.set(key, (monthlyTotals.get(key) ?? 0) + toNumber(doc.totalAmount))
+  }
+
+  for (const doc of maintenanceDocs) {
+    const key = monthKeyFromDate(doc.date)
+    monthlyTotals.set(key, (monthlyTotals.get(key) ?? 0) + toNumber(doc.amount))
+  }
+
+  const previousMonthKeys = Array.from(monthlyTotals.keys())
+    .filter((key) => key < currentMonthKey)
+    .sort((a, b) => b.localeCompare(a))
+    .slice(0, 3)
+
+  if (previousMonthKeys.length === 0) {
+    return {
+      amount: null,
+      monthsUsed: 0,
+    }
+  }
+
+  const total = previousMonthKeys.reduce((sum, key) => sum + (monthlyTotals.get(key) ?? 0), 0)
+
+  return {
+    amount: total / previousMonthKeys.length,
+    monthsUsed: previousMonthKeys.length,
+  }
+}
+
 const readPeriodDocs = async (payload: Payload, start: Date, end: Date) => {
   const [diesel, maintenance, hours] = await Promise.all([
     payload.find({
@@ -233,6 +289,13 @@ export const getGeneratorDashboardStats = async (
   const window = buildRangeWindow(period)
   const currentDocs = await readPeriodDocs(payload, window.start, window.end)
   const previousDocs = await readPeriodDocs(payload, window.previousStart, window.previousEnd)
+  const completedMonthsRangeStart = startOfMonth(new Date(window.start.getFullYear() - 2, 0, 1))
+  const historicalDocs = await readPeriodDocs(payload, completedMonthsRangeStart, window.end)
+  const estimatedMonthlyCollection = computeEstimatedMonthlyCollection({
+    dieselDocs: historicalDocs.dieselDocs,
+    maintenanceDocs: historicalDocs.maintenanceDocs,
+    currentWindowStart: window.start,
+  })
 
   return {
     period: {
@@ -245,5 +308,6 @@ export const getGeneratorDashboardStats = async (
     current: aggregateStats(currentDocs),
     previous: aggregateStats(previousDocs),
     timeline: buildTimeline(currentDocs.hourDocs),
+    estimatedMonthlyCollection,
   }
 }

@@ -3,7 +3,7 @@
 import type { DashboardPeriod } from '@/lib/generatorStats'
 import { useGeneratorDashboardStats } from '@/hooks/use-generator-dashboard-stats'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Fuel, Gauge, ReceiptText, Timer, CalendarDays } from 'lucide-react'
+import { Fuel, Gauge, ReceiptText, Timer, CalendarDays, HandCoins } from 'lucide-react'
 
 type Props = {
   period: DashboardPeriod
@@ -37,8 +37,8 @@ export function GeneratorStatCards({ period }: Props) {
 
   if (isLoading) {
     return (
-      <div className="grid gap-3 sm:gap-4 md:grid-cols-2 xl:grid-cols-5">
-        {Array.from({ length: 5 }).map((_, index) => (
+      <div className="grid gap-3 sm:gap-4 md:grid-cols-2 xl:grid-cols-6">
+        {Array.from({ length: 6 }).map((_, index) => (
           <Card key={index}>
             <CardHeader className="pb-2">
               <CardTitle className="text-base font-medium">Loading...</CardTitle>
@@ -70,7 +70,7 @@ export function GeneratorStatCards({ period }: Props) {
   const { current, previous } = data
 
   return (
-    <div className="grid gap-3 sm:gap-4 md:grid-cols-2 xl:grid-cols-5">
+    <div className="grid gap-3 sm:gap-4 md:grid-cols-2 xl:grid-cols-6">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <CardTitle className="text-base font-medium">Diesel spent</CardTitle>
@@ -154,6 +154,31 @@ export function GeneratorStatCards({ period }: Props) {
           <p className="text-sm text-muted-foreground">
             Derived from total expense and runtime in selected period.
           </p>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <CardTitle className="text-base font-medium">Estimated monthly collection</CardTitle>
+          <HandCoins className="size-4" />
+        </CardHeader>
+        <CardContent className="space-y-1">
+          <p className="text-2xl font-bold">
+            {data.estimatedMonthlyCollection.amount !== null
+              ? formatCurrency(data.estimatedMonthlyCollection.amount)
+              : 'Not enough data'}
+          </p>
+          <p className="text-sm text-muted-foreground">
+            {data.estimatedMonthlyCollection.amount !== null
+              ? `You need to collect ${formatCurrency(data.estimatedMonthlyCollection.amount)} / month to cover all costs.`
+              : 'Add completed month records to estimate the monthly required collection.'}
+          </p>
+          {data.estimatedMonthlyCollection.amount !== null ? (
+            <p className="text-xs text-muted-foreground">
+              Estimated from the previous {data.estimatedMonthlyCollection.monthsUsed} completed month
+              {data.estimatedMonthlyCollection.monthsUsed > 1 ? 's' : ''}.
+            </p>
+          ) : null}
         </CardContent>
       </Card>
     </div>
