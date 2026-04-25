@@ -5,6 +5,10 @@ import { headers as getHeaders } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { getPayload } from 'payload'
 import type { DateRange } from '@/components/ui/date-range-filter'
+import {
+  getGeneratorDashboardStats as getGeneratorDashboardStatsFromLib,
+  type DashboardPeriod,
+} from '@/lib/generatorStats'
 
 // Get the current user from payload
 export async function getCurrentUser() {
@@ -505,5 +509,15 @@ export async function getGeneratorHoursByDay(range: DateRange, monthIndex?: numb
   } catch (error) {
     console.error('Error getting generator hours by day:', error)
     return []
+  }
+}
+
+export async function getGeneratorDashboardStats(period: DashboardPeriod) {
+  try {
+    const payload = await getPayload({ config: configPromise })
+    return await getGeneratorDashboardStatsFromLib(payload, period)
+  } catch (error) {
+    console.error('Error getting generator dashboard stats:', error)
+    return null
   }
 }

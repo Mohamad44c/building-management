@@ -1,9 +1,7 @@
 'use client'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { DateRangeFilter } from '@/components/ui/date-range-filter'
-import { useGeneratorHoursByDay } from '@/hooks/use-generator-hours'
-import { useState } from 'react'
+import { useGeneratorDashboardStats } from '@/hooks/use-generator-dashboard-stats'
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 import {
   ChartContainer,
@@ -12,6 +10,7 @@ import {
   ChartLegend,
   ChartLegendContent,
 } from '@/components/ui/chart'
+import type { DashboardPeriod } from '@/lib/generatorStats'
 
 const chartConfig = {
   hoursRun: {
@@ -23,27 +22,32 @@ const chartConfig = {
   },
 }
 
-export function GeneratorHoursByDayChart() {
-  const currentMonth = new Date().getMonth()
-  const [selectedMonth, setSelectedMonth] = useState<number>(currentMonth)
-  const { data: hours, isLoading } = useGeneratorHoursByDay(selectedMonth)
+type Props = {
+  period: DashboardPeriod
+}
 
-  const chartData = hours?.map((reading: any) => ({
-    date: reading.date,
-    hoursRun: reading.hoursRun,
-    meterReading: reading.meterReading,
-  }))
+export function GeneratorHoursByDayChart({ period }: Props) {
+  const { data, isLoading, isError } = useGeneratorDashboardStats(period)
+  const chartData = data?.timeline ?? []
+  const hasEnoughData = chartData.length >= 2
 
   return (
     <Card className="md:col-span-2 lg:col-span-4">
-      <CardHeader className="flex flex-col gap-2 space-y-0 pb-2 sm:flex-row sm:items-center sm:justify-between">
+      <CardHeader className="flex flex-col gap-2 space-y-0 pb-2">
         <CardTitle className="text-sm font-medium sm:text-base">Generator Hours by Day</CardTitle>
-        <DateRangeFilter onMonthChange={setSelectedMonth} defaultValue={selectedMonth} />
       </CardHeader>
       <CardContent>
         {isLoading ? (
           <div className="flex h-[250px] items-center justify-center sm:h-[300px] lg:h-[350px]">
             Loading...
+          </div>
+        ) : isError ? (
+          <div className="flex h-[250px] items-center justify-center text-sm text-muted-foreground sm:h-[300px] lg:h-[350px]">
+            Could not load generator timeline data for this period.
+          </div>
+        ) : !hasEnoughData ? (
+          <div className="flex h-[250px] items-center justify-center text-sm text-muted-foreground sm:h-[300px] lg:h-[350px]">
+            Add at least two meter readings in this period to view the daily usage timeline.
           </div>
         ) : (
           <ChartContainer
