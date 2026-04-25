@@ -21,7 +21,7 @@ const renderComparison = (current: number, previous: number, formatter: (value: 
 
   const delta = current - previous
   const percent = (delta / previous) * 100
-  const trendClass = delta > 0 ? 'text-destructive' : delta < 0 ? 'text-emerald-600' : 'text-muted-foreground'
+  const trendClass = delta > 0 ? 'text-destructive' : delta < 0 ? 'text-primary' : 'text-muted-foreground'
 
   return (
     <p className={`text-xs ${trendClass}`}>
@@ -73,7 +73,7 @@ export function GeneratorStatCards({ period }: Props) {
     <div className="grid gap-3 sm:gap-4 md:grid-cols-2 xl:grid-cols-5">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle className="text-sm font-medium">Diesel spend</CardTitle>
+          <CardTitle className="text-sm font-medium">Diesel spent</CardTitle>
           <Fuel className="size-4" />
         </CardHeader>
         <CardContent className="space-y-1">

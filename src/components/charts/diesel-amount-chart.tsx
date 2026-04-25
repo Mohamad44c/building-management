@@ -12,8 +12,8 @@ const chartConfig = {
   amount: {
     label: 'Amount',
     theme: {
-      light: 'oklch(0.488 0.243 264.376)',
-      dark: 'oklch(0.488 0.243 264.376)',
+      light: 'var(--color-chart-1)',
+      dark: 'var(--color-chart-1)',
     },
   },
 }

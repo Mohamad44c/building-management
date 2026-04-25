@@ -20,14 +20,14 @@ export function DashboardContent() {
   const [period, setPeriod] = useState<DashboardPeriodValue>(defaultPeriod)
 
   return (
-    <div className="space-y-4 p-4 sm:space-y-6 sm:p-6 lg:space-y-8 lg:p-8">
-      <div className="space-y-3 sm:space-y-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+    <div className="mx-auto w-full space-y-6 p-4 sm:space-y-8 sm:p-6 lg:space-y-10 lg:p-8">
+      <div className="space-y-4 sm:space-y-5">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="space-y-1 sm:space-y-2">
             <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
               Building Management Dashboard
             </h1>
-            <p className="text-sm text-muted-foreground sm:text-base lg:text-lg">
+            <p className="max-w-3xl text-base text-muted-foreground lg:text-lg">
               Monitor expenses, diesel consumption, and payments across your building portfolio with
               comprehensive analytics and insights.
             </p>
@@ -39,12 +39,12 @@ export function DashboardContent() {
 
       <GeneratorStatCards period={period} />
 
-      <div className="grid gap-3 sm:gap-4 md:grid-cols-2 lg:grid-cols-10">
+      <div className="grid gap-4 sm:gap-5 md:grid-cols-2 lg:grid-cols-10">
         <PaymentsByBuildingChart />
         <TenantsByBuildingChart />
       </div>
 
-      <div className="grid gap-3 sm:gap-4 md:grid-cols-2 lg:grid-cols-8">
+      <div className="grid gap-4 sm:gap-5 md:grid-cols-2 lg:grid-cols-8">
         <ExpensesChart />
         <DieselExpensesChart />
         <GeneratorExpensesByCategoryChart />

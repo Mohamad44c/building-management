@@ -16,8 +16,8 @@ const chartConfig = {
   hoursRun: {
     label: 'Hours Run',
     theme: {
-      light: 'oklch(0.6 0.118 184.704)',
-      dark: 'oklch(0.696 0.17 162.48)',
+      light: 'var(--color-chart-2)',
+      dark: 'var(--color-chart-2)',
     },
   },
 }
@@ -25,6 +25,13 @@ const chartConfig = {
 type Props = {
   period: DashboardPeriod
 }
+
+const formatDateLabel = (value: string) =>
+  new Date(value).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  })
 
 export function GeneratorHoursByDayChart({ period }: Props) {
   const { data, isLoading, isError } = useGeneratorDashboardStats(period)
@@ -56,9 +63,15 @@ export function GeneratorHoursByDayChart({ period }: Props) {
           >
             <BarChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
-              <XAxis dataKey="date" tickLine={false} axisLine={false} fontSize={12} />
+              <XAxis
+                dataKey="date"
+                tickLine={false}
+                axisLine={false}
+                fontSize={12}
+                tickFormatter={formatDateLabel}
+              />
               <YAxis tickLine={false} axisLine={false} fontSize={12} />
-              <ChartTooltip content={<ChartTooltipContent />} />
+              <ChartTooltip content={<ChartTooltipContent labelFormatter={formatDateLabel} />} />
               <ChartLegend content={<ChartLegendContent />} />
               <Bar dataKey="hoursRun" fill="var(--color-hoursRun)" radius={4} />
             </BarChart>
