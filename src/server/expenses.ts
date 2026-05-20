@@ -9,6 +9,7 @@ import {
   getGeneratorDashboardStats as getGeneratorDashboardStatsFromLib,
   type DashboardPeriod,
 } from '@/lib/generatorStats'
+import { remainingBalance, type DieselPayableDoc } from '@/lib/dieselExpenseBalance'
 
 // Get the current user from payload
 export async function getCurrentUser() {
@@ -106,6 +107,7 @@ export async function getDieselExpensesByDateRange(range: DateRange, monthIndex?
         },
       },
       sort: 'date',
+      limit: 0,
     })
 
     return expenses.docs
@@ -144,6 +146,55 @@ export async function getCurrentMonthDieselLiters() {
   } catch (error) {
     console.error('Error calculating current month diesel liters:', error)
     return 0
+  }
+}
+
+export type DieselOutstandingSummary = {
+  /** Sum of remaining balances (invoice total minus amount paid). */
+  totalOwed: number
+  /** Invoices with a remaining balance greater than zero. */
+  unpaidInvoiceCount: number
+}
+
+/**
+ * Outstanding supplier balance for diesel: sum of (total − amount paid) per invoice,
+ * including partial payments. Legacy rows without `amountPaid` infer full pay from `isPaid`.
+ * Independent of dashboard date filters.
+ */
+export async function getDieselOutstandingSummary(): Promise<DieselOutstandingSummary> {
+  try {
+    const payload = await getPayload({ config: configPromise })
+
+    const result = await payload.find({
+      collection: 'diesel-expenses',
+      where: {
+        or: [{ isPaid: { equals: false } }, { isPaid: { equals: null } }],
+      },
+      sort: '-date',
+      limit: 0,
+    })
+
+    let totalOwed = 0
+    let unpaidInvoiceCount = 0
+
+    for (const doc of result.docs) {
+      const rem = remainingBalance(doc as DieselPayableDoc)
+      if (rem > 0) {
+        totalOwed += rem
+        unpaidInvoiceCount += 1
+      }
+    }
+
+    return {
+      totalOwed,
+      unpaidInvoiceCount,
+    }
+  } catch (error) {
+    console.error('Error calculating diesel outstanding summary:', error)
+    return {
+      totalOwed: 0,
+      unpaidInvoiceCount: 0,
+    }
   }
 }
 

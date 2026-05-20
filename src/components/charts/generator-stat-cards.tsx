@@ -78,6 +78,7 @@ export function GeneratorStatCards({ period }: Props) {
         </CardHeader>
         <CardContent className="space-y-1">
           <p className="text-2xl font-bold">{formatCurrency(current.dieselSpent)}</p>
+          <p className="text-sm text-muted-foreground">Billed diesel in period (paid + unpaid)</p>
           {renderComparison(current.dieselSpent, previous.dieselSpent, formatCurrency)}
         </CardContent>
       </Card>

@@ -1,11 +1,22 @@
 import type { CollectionConfig } from 'payload'
 import { IsPaidCell } from '../components/cells/IsPaidCell'
+import { syncDieselPaymentFields } from './dieselExpenseHooks'
 
 export const DieselExpenses: CollectionConfig = {
   slug: 'diesel-expenses',
+  hooks: {
+    beforeChange: [syncDieselPaymentFields],
+  },
   admin: {
     useAsTitle: 'date',
-    defaultColumns: ['pricePerThousandLiters','isPaid', 'liters', 'totalAmount', 'date'],
+    defaultColumns: [
+      'pricePerThousandLiters',
+      'amountPaid',
+      'totalAmount',
+      'isPaid',
+      'liters',
+      'date',
+    ],
     group: 'All Expenses',
   },
   fields: [
@@ -77,11 +88,25 @@ export const DieselExpenses: CollectionConfig = {
       },
     },
     {
+      name: 'amountPaid',
+      type: 'number',
+      label: 'Amount paid (USD)',
+      min: 0,
+      defaultValue: 0,
+      admin: {
+        position: 'sidebar',
+        step: 0.01,
+        description: 'How much has been paid toward this invoice. Cannot exceed the invoice total.',
+      },
+    },
+    {
       name: 'isPaid',
       type: 'checkbox',
       label: 'Is Paid',
       defaultValue: false,
       admin: {
+        description:
+          'Checked automatically when amount paid reaches the total. You can check to record full payment, or uncheck to reopen a settled invoice.',
         components: {
           Cell: IsPaidCell as any,
         },

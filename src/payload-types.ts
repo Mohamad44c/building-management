@@ -168,6 +168,13 @@ export interface DieselExpense {
    * Total amount in USD
    */
   totalAmount?: number | null;
+  /**
+   * How much has been paid toward this invoice. Cannot exceed the invoice total.
+   */
+  amountPaid?: number | null;
+  /**
+   * Checked automatically when amount paid reaches the total. You can check to record full payment, or uncheck to reopen a settled invoice.
+   */
   isPaid?: boolean | null;
   updatedAt: string;
   createdAt: string;
@@ -425,6 +432,7 @@ export interface DieselExpensesSelect<T extends boolean = true> {
   pricePerLiter?: T;
   date?: T;
   totalAmount?: T;
+  amountPaid?: T;
   isPaid?: T;
   updatedAt?: T;
   createdAt?: T;

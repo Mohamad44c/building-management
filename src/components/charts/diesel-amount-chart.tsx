@@ -44,7 +44,9 @@ export function DieselAmountChart() {
       <CardContent>
         <div className="mb-3 sm:mb-4">
           <div className="text-xl font-bold sm:text-2xl">${totalAmount.toLocaleString()}</div>
-          <p className="text-xs text-muted-foreground">Total diesel expenses</p>
+          <p className="text-xs text-muted-foreground">
+            Invoice totals for the month (includes unpaid invoices)
+          </p>
         </div>
         {isLoading ? (
           <div className="flex h-[200px] items-center justify-center sm:h-[250px] lg:h-[300px]">

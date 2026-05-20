@@ -7,10 +7,12 @@ import { ExpensesChart } from '@/components/charts/expenses-chart'
 import { DieselExpensesChart } from '@/components/charts/diesel-expenses-chart'
 import { GeneratorExpensesByCategoryChart } from '@/components/charts/generator-expenses-by-category-chart'
 import { DieselAmountChart } from '@/components/charts/diesel-amount-chart'
+import { DieselPricePerLiterChart } from '@/components/charts/diesel-price-per-liter-chart'
 import { GeneratorHoursByDayChart } from '@/components/charts/generator-hours-by-day-chart'
 import { DashboardPeriodFilter, type DashboardPeriodValue } from '@/components/ui/dashboard-period-filter'
 import { useState } from 'react'
 import { GeneratorStatCards } from '@/components/charts/generator-stat-cards'
+import { DieselOutstandingBalanceCard } from '@/components/charts/diesel-outstanding-balance-card'
 
 const defaultPeriod: DashboardPeriodValue = {
   preset: 'month',
@@ -40,6 +42,7 @@ export function DashboardContent() {
       <GeneratorStatCards period={period} />
 
       <div className="grid gap-4 sm:gap-5 md:grid-cols-2 lg:grid-cols-10">
+        <DieselOutstandingBalanceCard />
         <PaymentsByBuildingChart />
         <TenantsByBuildingChart />
       </div>
@@ -49,6 +52,7 @@ export function DashboardContent() {
         <DieselExpensesChart />
         <GeneratorExpensesByCategoryChart />
         <DieselAmountChart />
+        <DieselPricePerLiterChart />
         <GeneratorHoursByDayChart period={period} />
       </div>
     </div>

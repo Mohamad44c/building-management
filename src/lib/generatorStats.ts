@@ -146,6 +146,7 @@ const aggregateStats = ({
   maintenanceDocs: any[]
   hourDocs: any[]
 }): GeneratorStatsSnapshot => {
+  // Invoiced diesel in the window (not cash-paid only). Open payables are shown separately on the dashboard.
   const dieselSpent = dieselDocs.reduce((sum, doc) => sum + toNumber(doc.totalAmount), 0)
   const dieselLiters = dieselDocs.reduce((sum, doc) => sum + toNumber(doc.liters), 0)
   const maintenanceCost = maintenanceDocs.reduce((sum, doc) => sum + toNumber(doc.amount), 0)

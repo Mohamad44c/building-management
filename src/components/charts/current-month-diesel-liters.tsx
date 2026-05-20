@@ -57,7 +57,9 @@ export function CurrentMonthDieselLiters() {
           </div>
           <div>
             <div className="text-xl font-bold sm:text-2xl">${totalAmount.toFixed(2)}</div>
-            <p className="text-xs text-muted-foreground">Total amount spent</p>
+            <p className="text-xs text-muted-foreground">
+              Invoice totals this month (includes unpaid)
+            </p>
           </div>
         </div>
       </CardContent>
