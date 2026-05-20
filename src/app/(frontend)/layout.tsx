@@ -25,7 +25,9 @@ export default function RootLayout(props: { children: React.ReactNode }) {
     <html lang="en" suppressHydrationWarning>
       <body className={`${montserrat.variable} ${geistMono.variable}`}>
         <Providers>
-          <main>{children}</main>
+          <main className="min-h-dvh bg-gradient-to-b from-secondary/40 via-background to-background antialiased">
+            {children}
+          </main>
         </Providers>
       </body>
     </html>
