@@ -26,6 +26,9 @@ export default buildConfig({
     importMap: {
       baseDir: path.resolve(dirname),
     },
+    components: {
+      actions: ['/components/admin/OpenDashboardButton#OpenDashboardButton'],
+    },
   },
   collections: [
     Expenses,

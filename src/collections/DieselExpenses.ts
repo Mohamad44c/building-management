@@ -1,5 +1,4 @@
 import type { CollectionConfig } from 'payload'
-import { IsPaidCell } from '../components/cells/IsPaidCell'
 import { syncDieselPaymentFields } from './dieselExpenseHooks'
 
 export const DieselExpenses: CollectionConfig = {
@@ -108,7 +107,7 @@ export const DieselExpenses: CollectionConfig = {
         description:
           'Checked automatically when amount paid reaches the total. You can check to record full payment, or uncheck to reopen a settled invoice.',
         components: {
-          Cell: IsPaidCell as any,
+          Cell: '/components/cells/IsPaidCell#IsPaidCell',
         },
       },
     },
