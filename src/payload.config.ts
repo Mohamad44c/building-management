@@ -1,4 +1,4 @@
-// storage-adapter-import-placeholder
+import { s3Storage } from '@payloadcms/storage-s3'
 import { postgresAdapter } from '@payloadcms/db-postgres'
 import { payloadCloudPlugin } from '@payloadcms/payload-cloud'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
@@ -16,6 +16,8 @@ import { GeneratorHours } from './collections/GeneratorHours'
 import { Buildings } from './collections/Buildings'
 import { Tenants } from './collections/Tenants'
 import { Payments } from './collections/Payments'
+import { Invoices } from './collections/Invoices'
+import { InvoicePdfs } from './collections/InvoicePdfs'
  
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -39,6 +41,8 @@ export default buildConfig({
     ExpenseCategories,
     Buildings,
     Tenants,
+    Invoices,
+    InvoicePdfs,
     Users,
   ],
   editor: lexicalEditor(),
@@ -54,6 +58,18 @@ export default buildConfig({
   sharp,
   plugins: [
     payloadCloudPlugin(),
-    // storage-adapter-placeholder
+    s3Storage({
+      collections: { 'invoice-pdfs': true },
+      bucket: process.env.S3_BUCKET || '',
+      config: {
+        region: process.env.S3_REGION,
+        endpoint: process.env.S3_ENDPOINT,
+        credentials: {
+          accessKeyId: process.env.S3_ACCESS_KEY_ID || '',
+          secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || '',
+        },
+        forcePathStyle: true,
+      },
+    }),
   ],
 })

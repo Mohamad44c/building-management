@@ -75,6 +75,8 @@ export interface Config {
     'expense-categories': ExpenseCategory;
     buildings: Building;
     tenants: Tenant;
+    invoices: Invoice;
+    'invoice-pdfs': InvoicePdf;
     users: User;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -90,6 +92,8 @@ export interface Config {
     'expense-categories': ExpenseCategoriesSelect<false> | ExpenseCategoriesSelect<true>;
     buildings: BuildingsSelect<false> | BuildingsSelect<true>;
     tenants: TenantsSelect<false> | TenantsSelect<true>;
+    invoices: InvoicesSelect<false> | InvoicesSelect<true>;
+    'invoice-pdfs': InvoicePdfsSelect<false> | InvoicePdfsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -303,6 +307,75 @@ export interface Building {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "invoices".
+ */
+export interface Invoice {
+  id: number;
+  tenant: number | Tenant;
+  /**
+   * Auto-populated from the tenant when the invoice is created
+   */
+  building?: (number | null) | Building;
+  /**
+   * Billing period month (1-12)
+   */
+  periodMonth: number;
+  /**
+   * Billing period year
+   */
+  periodYear: number;
+  dueDate?: string | null;
+  /**
+   * Fixed fees are auto-populated from the tenant when the invoice is created. Add ad-hoc items (diesel surcharge, maintenance, etc.) manually.
+   */
+  lineItems?:
+    | {
+        label: string;
+        amount: number;
+        kind?: ('fixed' | 'adhoc') | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Sum of line items
+   */
+  totalAmount?: number | null;
+  /**
+   * How much has been paid toward this invoice. Cannot exceed the invoice total.
+   */
+  amountPaid?: number | null;
+  /**
+   * Checked automatically when amount paid reaches the total. You can check to record full payment, or uncheck to reopen a settled invoice.
+   */
+  isPaid?: boolean | null;
+  status?: ('draft' | 'generated') | null;
+  /**
+   * Set automatically after PDF generation
+   */
+  pdfFile?: (number | null) | InvoicePdf;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "invoice-pdfs".
+ */
+export interface InvoicePdf {
+  id: number;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "users".
  */
 export interface User {
@@ -363,6 +436,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'tenants';
         value: number | Tenant;
+      } | null)
+    | ({
+        relationTo: 'invoices';
+        value: number | Invoice;
+      } | null)
+    | ({
+        relationTo: 'invoice-pdfs';
+        value: number | InvoicePdf;
       } | null)
     | ({
         relationTo: 'users';
@@ -512,6 +593,49 @@ export interface TenantsSelect<T extends boolean = true> {
   notes?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "invoices_select".
+ */
+export interface InvoicesSelect<T extends boolean = true> {
+  tenant?: T;
+  building?: T;
+  periodMonth?: T;
+  periodYear?: T;
+  dueDate?: T;
+  lineItems?:
+    | T
+    | {
+        label?: T;
+        amount?: T;
+        kind?: T;
+        id?: T;
+      };
+  totalAmount?: T;
+  amountPaid?: T;
+  isPaid?: T;
+  status?: T;
+  pdfFile?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "invoice-pdfs_select".
+ */
+export interface InvoicePdfsSelect<T extends boolean = true> {
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
