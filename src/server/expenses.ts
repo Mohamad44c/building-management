@@ -10,6 +10,7 @@ import {
   type DashboardPeriod,
 } from '@/lib/generatorStats'
 import { remainingBalance, type DieselPayableDoc } from '@/lib/dieselExpenseBalance'
+import { projectLinear } from '@/lib/forecast'
 
 // Get the current user from payload
 export async function getCurrentUser() {
@@ -570,5 +571,232 @@ export async function getGeneratorDashboardStats(period: DashboardPeriod) {
   } catch (error) {
     console.error('Error getting generator dashboard stats:', error)
     return null
+  }
+}
+
+// Get general expenses grouped by expense category
+export async function getExpensesByCategory(range: DateRange, monthIndex?: number) {
+  try {
+    const now = new Date()
+    let startDate = new Date()
+    let endDate = new Date()
+
+    switch (range) {
+      case 'month':
+        const targetMonth = monthIndex !== undefined ? monthIndex : now.getMonth()
+        const targetYear = now.getFullYear()
+        startDate = new Date(targetYear, targetMonth, 1)
+        endDate = new Date(targetYear, targetMonth + 1, 0, 23, 59, 59, 999)
+        break
+      case 'quarter':
+        startDate.setMonth(now.getMonth() - 3)
+        break
+      case 'year':
+        startDate.setFullYear(now.getFullYear() - 1)
+        break
+    }
+
+    const payload = await getPayload({ config: configPromise })
+
+    const expenses = await payload.find({
+      collection: 'expenses',
+      depth: 1,
+      where: {
+        date: {
+          greater_than_equal: startDate.toISOString(),
+          less_than_equal: endDate.toISOString(),
+        },
+      },
+      sort: 'date',
+      limit: 0,
+    })
+
+    const expensesByCategory = expenses.docs.reduce((acc: any, expense: any) => {
+      const category = expense.category
+      const categoryId = typeof category === 'object' ? category?.id : category
+      const categoryName = typeof category === 'object' ? category?.name : 'Uncategorized'
+
+      if (!acc[categoryId]) {
+        acc[categoryId] = {
+          id: categoryId,
+          name: categoryName || 'Uncategorized',
+          totalAmount: 0,
+          count: 0,
+        }
+      }
+
+      acc[categoryId].totalAmount += expense.amount || 0
+      acc[categoryId].count += 1
+
+      return acc
+    }, {})
+
+    const categoryData = Object.values(expensesByCategory).sort(
+      (a: any, b: any) => b.totalAmount - a.totalAmount,
+    )
+
+    const grandTotal = categoryData.reduce(
+      (sum: number, category: any) => sum + category.totalAmount,
+      0,
+    )
+
+    return {
+      categories: categoryData as Array<{ id: string; name: string; totalAmount: number; count: number }>,
+      grandTotal,
+    }
+  } catch (error) {
+    console.error('Error getting expenses by category:', error)
+    return {
+      categories: [],
+      grandTotal: 0,
+    }
+  }
+}
+
+const getPricePerLiterUsd = (expense: { pricePerLiter?: number | null; pricePerThousandLiters?: number | null }): number => {
+  const fromField = Number(expense.pricePerLiter)
+  if (Number.isFinite(fromField) && fromField > 0) {
+    return Math.round(fromField * 10000) / 10000
+  }
+  const perThousand = Number(expense.pricePerThousandLiters)
+  if (Number.isFinite(perThousand) && perThousand > 0) {
+    return Math.round((perThousand / 1000) * 10000) / 10000
+  }
+  return 0
+}
+
+export type DieselPriceForecast = {
+  lastPrice: number | null
+  projectedNextPrice: number | null
+  trend: 'up' | 'down' | 'flat' | null
+  pointsUsed: number
+}
+
+/**
+ * Simple linear trend over historical diesel price-per-liter deliveries,
+ * projected one delivery ahead. Purely trend-based, not a market forecast.
+ */
+export async function getDieselPriceForecast(): Promise<DieselPriceForecast> {
+  try {
+    const payload = await getPayload({ config: configPromise })
+
+    const result = await payload.find({
+      collection: 'diesel-expenses',
+      sort: 'date',
+      limit: 0,
+    })
+
+    const prices = result.docs
+      .map((doc: any) => getPricePerLiterUsd(doc))
+      .filter((price) => price > 0)
+
+    if (prices.length === 0) {
+      return { lastPrice: null, projectedNextPrice: null, trend: null, pointsUsed: 0 }
+    }
+
+    const lastPrice = prices[prices.length - 1]
+
+    if (prices.length < 2) {
+      return { lastPrice, projectedNextPrice: null, trend: null, pointsUsed: prices.length }
+    }
+
+    const points = prices.map((price, index) => ({ x: index, y: price }))
+    const projectedNextPrice = projectLinear(points, points.length)
+
+    let trend: DieselPriceForecast['trend'] = 'flat'
+    if (projectedNextPrice !== null) {
+      const delta = projectedNextPrice - lastPrice
+      trend = Math.abs(delta) < 0.0005 ? 'flat' : delta > 0 ? 'up' : 'down'
+    }
+
+    return {
+      lastPrice,
+      projectedNextPrice: projectedNextPrice !== null ? Math.max(0, projectedNextPrice) : null,
+      trend,
+      pointsUsed: prices.length,
+    }
+  } catch (error) {
+    console.error('Error getting diesel price forecast:', error)
+    return { lastPrice: null, projectedNextPrice: null, trend: null, pointsUsed: 0 }
+  }
+}
+
+const SERVICE_INTERVAL_HOURS = 250
+
+export type GeneratorMaintenanceForecast = {
+  hoursSinceService: number | null
+  hoursRemaining: number | null
+  estimatedDueDate: string | null
+  avgHoursPerDay: number | null
+}
+
+/**
+ * Estimates when the generator's next oil change is due. `SERVICE_INTERVAL_HOURS`
+ * is a general-purpose assumption (no service-interval field exists on any
+ * collection yet) — treat this as a rough estimate, not a maintenance schedule.
+ */
+export async function getGeneratorMaintenanceForecast(): Promise<GeneratorMaintenanceForecast> {
+  try {
+    const payload = await getPayload({ config: configPromise })
+
+    const [latestReading, lastOilChange, recentReadings] = await Promise.all([
+      payload.find({
+        collection: 'generator-hours',
+        sort: '-date',
+        limit: 1,
+      }),
+      payload.find({
+        collection: 'generator-expenses',
+        where: { expenseType: { equals: 'oil-change' } },
+        sort: '-date',
+        limit: 1,
+      }),
+      payload.find({
+        collection: 'generator-hours',
+        sort: '-date',
+        limit: 30,
+      }),
+    ])
+
+    const currentMeterReading = Number(latestReading.docs[0]?.meterReading)
+    if (!Number.isFinite(currentMeterReading)) {
+      return { hoursSinceService: null, hoursRemaining: null, estimatedDueDate: null, avgHoursPerDay: null }
+    }
+
+    const lastServiceHours = Number(lastOilChange.docs[0]?.hours)
+    const hoursSinceService = Number.isFinite(lastServiceHours)
+      ? Math.max(0, currentMeterReading - lastServiceHours)
+      : null
+
+    const readings = recentReadings.docs
+    const totalRecentHours = readings.reduce((sum, doc: any) => sum + (Number(doc.hoursRun) || 0), 0)
+    const daySpan =
+      readings.length > 1
+        ? Math.max(
+            1,
+            (new Date(readings[0].date).getTime() - new Date(readings[readings.length - 1].date).getTime()) /
+              86_400_000,
+          )
+        : null
+    const avgHoursPerDay = daySpan ? totalRecentHours / daySpan : null
+
+    if (hoursSinceService === null) {
+      return { hoursSinceService: null, hoursRemaining: null, estimatedDueDate: null, avgHoursPerDay }
+    }
+
+    const hoursRemaining = Math.max(0, SERVICE_INTERVAL_HOURS - hoursSinceService)
+
+    let estimatedDueDate: string | null = null
+    if (avgHoursPerDay && avgHoursPerDay > 0) {
+      const daysRemaining = Math.ceil(hoursRemaining / avgHoursPerDay)
+      const dueDate = new Date()
+      dueDate.setDate(dueDate.getDate() + daysRemaining)
+      estimatedDueDate = dueDate.toISOString()
+    }
+
+    return { hoursSinceService, hoursRemaining, estimatedDueDate, avgHoursPerDay }
+  } catch (error) {
+    console.error('Error getting generator maintenance forecast:', error)
+    return { hoursSinceService: null, hoursRemaining: null, estimatedDueDate: null, avgHoursPerDay: null }
   }
 }

@@ -8,7 +8,7 @@ export type DashboardPeriod = {
   to?: string
 }
 
-type RangeWindow = {
+export type RangeWindow = {
   start: Date
   end: Date
   previousStart: Date
@@ -65,7 +65,7 @@ const addDays = (date: Date, days: number): Date => {
 const startOfMonth = (date: Date): Date =>
   new Date(date.getFullYear(), date.getMonth(), 1, 0, 0, 0, 0)
 
-const buildRangeWindow = (period: DashboardPeriod): RangeWindow => {
+export const buildRangeWindow = (period: DashboardPeriod): RangeWindow => {
   const now = new Date()
   let start = startOfDay(now)
   let end = endOfDay(now)

@@ -4,6 +4,9 @@ import {
   getGeneratorExpensesByDateRange,
   getGeneratorExpensesByCategory,
   getDieselOutstandingSummary,
+  getExpensesByCategory,
+  getDieselPriceForecast,
+  getGeneratorMaintenanceForecast,
 } from '@/server/expenses'
 import { useQuery } from '@tanstack/react-query'
 import type { DateRange } from '@/components/ui/date-range-filter'
@@ -47,5 +50,26 @@ export function useDieselOutstandingSummary() {
   return useQuery({
     queryKey: ['diesel-outstanding-summary'],
     queryFn: () => getDieselOutstandingSummary(),
+  })
+}
+
+export function useExpensesByCategory(range: DateRange, monthIndex?: number) {
+  return useQuery({
+    queryKey: ['expenses-by-category', range, monthIndex ?? null],
+    queryFn: () => getExpensesByCategory(range, monthIndex),
+  })
+}
+
+export function useDieselPriceForecast() {
+  return useQuery({
+    queryKey: ['diesel-price-forecast'],
+    queryFn: () => getDieselPriceForecast(),
+  })
+}
+
+export function useGeneratorMaintenanceForecast() {
+  return useQuery({
+    queryKey: ['generator-maintenance-forecast'],
+    queryFn: () => getGeneratorMaintenanceForecast(),
   })
 }
