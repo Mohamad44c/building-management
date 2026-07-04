@@ -11,10 +11,6 @@ import {
 
 import { PaymentsByBuildingChart } from '@/components/charts/payments-by-building-chart'
 import { TenantsByBuildingChart } from '@/components/charts/tenants-by-building-chart'
-import { ExpensesChart } from '@/components/charts/expenses-chart'
-import { DieselExpensesChart } from '@/components/charts/diesel-expenses-chart'
-import { GeneratorExpensesByCategoryChart } from '@/components/charts/generator-expenses-by-category-chart'
-import { DieselAmountChart } from '@/components/charts/diesel-amount-chart'
 import { DieselPricePerLiterChart } from '@/components/charts/diesel-price-per-liter-chart'
 import { GeneratorHoursByDayChart } from '@/components/charts/generator-hours-by-day-chart'
 import type { DashboardPeriodValue } from '@/components/ui/dashboard-period-filter'
@@ -64,10 +60,6 @@ export function HomeDashboard() {
         iconClassName="text-violet-600 dark:text-violet-400"
       >
         <div className="grid gap-4 sm:gap-5 md:grid-cols-2 lg:grid-cols-8">
-          <ExpensesChart />
-          <DieselExpensesChart />
-          <GeneratorExpensesByCategoryChart />
-          <DieselAmountChart />
           <DieselPricePerLiterChart />
           <GeneratorHoursByDayChart period={period} />
         </div>
