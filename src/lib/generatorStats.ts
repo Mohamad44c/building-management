@@ -1,13 +1,5 @@
 import type { Payload } from 'payload'
 
-export type DashboardPeriodPreset = 'today' | 'week' | 'month' | 'year' | 'custom'
-
-export type DashboardPeriod = {
-  preset: DashboardPeriodPreset
-  from?: string
-  to?: string
-}
-
 export type RangeWindow = {
   start: Date
   end: Date
@@ -35,7 +27,6 @@ export type DailyHoursPoint = {
 
 export type GeneratorDashboardStats = {
   period: {
-    preset: DashboardPeriodPreset
     start: string
     end: string
     previousStart: string
@@ -50,56 +41,10 @@ export type GeneratorDashboardStats = {
   }
 }
 
-const startOfDay = (date: Date): Date =>
-  new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0)
-
-const endOfDay = (date: Date): Date =>
-  new Date(date.getFullYear(), date.getMonth(), date.getDate(), 23, 59, 59, 999)
-
-const addDays = (date: Date, days: number): Date => {
-  const copy = new Date(date)
-  copy.setDate(copy.getDate() + days)
-  return copy
-}
-
 const startOfMonth = (date: Date): Date =>
   new Date(date.getFullYear(), date.getMonth(), 1, 0, 0, 0, 0)
 
-export const buildRangeWindow = (period: DashboardPeriod): RangeWindow => {
-  const now = new Date()
-  let start = startOfDay(now)
-  let end = endOfDay(now)
-
-  if (period.preset === 'today') {
-    start = startOfDay(now)
-    end = endOfDay(now)
-  }
-
-  if (period.preset === 'week') {
-    const dayIndex = now.getDay()
-    const mondayOffset = dayIndex === 0 ? -6 : 1 - dayIndex
-    start = startOfDay(addDays(now, mondayOffset))
-    end = endOfDay(now)
-  }
-
-  if (period.preset === 'month') {
-    start = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0)
-    end = endOfDay(now)
-  }
-
-  if (period.preset === 'year') {
-    start = new Date(now.getFullYear(), 0, 1, 0, 0, 0, 0)
-    end = endOfDay(now)
-  }
-
-  if (period.preset === 'custom') {
-    if (!period.from || !period.to) {
-      throw new Error('Custom period requires both from and to values.')
-    }
-    start = startOfDay(new Date(period.from))
-    end = endOfDay(new Date(period.to))
-  }
-
+const buildRangeWindow = (start: Date, end: Date): RangeWindow => {
   if (start > end) {
     throw new Error('Invalid period: start date is after end date.')
   }
@@ -285,9 +230,10 @@ const readPeriodDocs = async (payload: Payload, start: Date, end: Date) => {
 
 export const getGeneratorDashboardStats = async (
   payload: Payload,
-  period: DashboardPeriod,
+  start: Date,
+  end: Date,
 ): Promise<GeneratorDashboardStats> => {
-  const window = buildRangeWindow(period)
+  const window = buildRangeWindow(start, end)
   const currentDocs = await readPeriodDocs(payload, window.start, window.end)
   const previousDocs = await readPeriodDocs(payload, window.previousStart, window.previousEnd)
   const completedMonthsRangeStart = startOfMonth(new Date(window.start.getFullYear() - 2, 0, 1))
@@ -300,7 +246,6 @@ export const getGeneratorDashboardStats = async (
 
   return {
     period: {
-      preset: period.preset,
       start: window.start.toISOString(),
       end: window.end.toISOString(),
       previousStart: window.previousStart.toISOString(),

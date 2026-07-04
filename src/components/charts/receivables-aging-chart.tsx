@@ -3,7 +3,7 @@
 import { useReceivablesAging } from '@/hooks/use-invoices'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts'
+import { CartesianGrid, Line, LineChart, XAxis, YAxis } from 'recharts'
 import { AlertCircle } from 'lucide-react'
 
 const chartConfig = {
@@ -44,7 +44,7 @@ export function ReceivablesAgingChart() {
           </div>
         ) : (
           <ChartContainer config={chartConfig} className="h-[220px] w-full sm:h-[260px]">
-            <BarChart data={data.buckets} margin={{ left: 4, right: 8, top: 8, bottom: 4 }}>
+            <LineChart data={data.buckets} margin={{ left: 4, right: 8, top: 8, bottom: 4 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
               <XAxis
                 dataKey="bucket"
@@ -68,8 +68,16 @@ export function ReceivablesAgingChart() {
                   />
                 }
               />
-              <Bar dataKey="totalOwed" fill="var(--color-totalOwed)" radius={[4, 4, 0, 0]} />
-            </BarChart>
+              <Line
+                type="monotone"
+                dataKey="totalOwed"
+                stroke="var(--color-totalOwed)"
+                strokeWidth={2}
+                dot={{ r: 3, fill: 'var(--color-totalOwed)' }}
+                activeDot={{ r: 5 }}
+                connectNulls
+              />
+            </LineChart>
           </ChartContainer>
         )}
       </CardContent>

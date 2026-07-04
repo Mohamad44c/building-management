@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useGeneratorDashboardStats } from '@/hooks/use-generator-dashboard-stats'
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts'
+import { CartesianGrid, Line, LineChart, XAxis, YAxis } from 'recharts'
 import {
   ChartContainer,
   ChartTooltip,
@@ -10,7 +10,6 @@ import {
   ChartLegend,
   ChartLegendContent,
 } from '@/components/ui/chart'
-import type { DashboardPeriod } from '@/lib/generatorStats'
 
 const chartConfig = {
   hoursRun: {
@@ -23,7 +22,8 @@ const chartConfig = {
 }
 
 type Props = {
-  period: DashboardPeriod
+  startDate: string
+  endDate: string
 }
 
 const formatDateLabel = (value: string) =>
@@ -33,8 +33,8 @@ const formatDateLabel = (value: string) =>
     year: 'numeric',
   })
 
-export function GeneratorHoursByDayChart({ period }: Props) {
-  const { data, isLoading, isError } = useGeneratorDashboardStats(period)
+export function GeneratorHoursByDayChart({ startDate, endDate }: Props) {
+  const { data, isLoading, isError } = useGeneratorDashboardStats(startDate, endDate)
   const chartData = data?.timeline ?? []
   const hasEnoughData = chartData.length >= 2
 
@@ -61,7 +61,7 @@ export function GeneratorHoursByDayChart({ period }: Props) {
             config={chartConfig}
             className="h-[250px] w-full sm:h-[300px] lg:h-[350px]"
           >
-            <BarChart data={chartData}>
+            <LineChart data={chartData} margin={{ left: 4, right: 8, top: 8, bottom: 4 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
               <XAxis
                 dataKey="date"
@@ -73,8 +73,16 @@ export function GeneratorHoursByDayChart({ period }: Props) {
               <YAxis tickLine={false} axisLine={false} fontSize={12} />
               <ChartTooltip content={<ChartTooltipContent labelFormatter={formatDateLabel} />} />
               <ChartLegend content={<ChartLegendContent />} />
-              <Bar dataKey="hoursRun" fill="var(--color-hoursRun)" radius={4} />
-            </BarChart>
+              <Line
+                type="monotone"
+                dataKey="hoursRun"
+                stroke="var(--color-hoursRun)"
+                strokeWidth={2}
+                dot={{ r: 3, fill: 'var(--color-hoursRun)' }}
+                activeDot={{ r: 5 }}
+                connectNulls
+              />
+            </LineChart>
           </ChartContainer>
         )}
       </CardContent>

@@ -4,12 +4,11 @@ import {
   getRentCollectionForecast,
 } from '@/server/invoices'
 import { useQuery } from '@tanstack/react-query'
-import type { DashboardPeriod } from '@/lib/generatorStats'
 
-export function useRentCollectionSummary(period: DashboardPeriod) {
+export function useRentCollectionSummary(startDate: string, endDate: string) {
   return useQuery({
-    queryKey: ['rent-collection-summary', period],
-    queryFn: () => getRentCollectionSummary(period),
+    queryKey: ['rent-collection-summary', startDate, endDate],
+    queryFn: () => getRentCollectionSummary(startDate, endDate),
   })
 }
 

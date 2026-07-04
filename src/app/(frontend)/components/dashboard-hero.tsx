@@ -3,14 +3,12 @@
 import { Building2, Sparkles } from 'lucide-react'
 
 import { ThemeToggle } from '@/components/theme-toggle'
-import {
-  DashboardPeriodFilter,
-  type DashboardPeriodValue,
-} from '@/components/ui/dashboard-period-filter'
+import { DashboardPeriodFilter } from '@/components/ui/dashboard-period-filter'
+import type { DashboardDateFilterValue } from '@/lib/dashboardDateFilter'
 
 export type DashboardHeroProps = {
-  period: DashboardPeriodValue
-  onPeriodChange: (value: DashboardPeriodValue) => void
+  period: DashboardDateFilterValue
+  onPeriodChange: (value: DashboardDateFilterValue) => void
 }
 
 export function DashboardHero({ period, onPeriodChange }: DashboardHeroProps) {

@@ -4,7 +4,6 @@ import configPromise from '@/payload.config'
 import { getPayload } from 'payload'
 import { renderInvoicePdfBuffer } from '@/lib/InvoicePdfDocument'
 import type { InvoiceLineItem } from '@/lib/invoiceCalc'
-import { buildRangeWindow, type DashboardPeriod } from '@/lib/generatorStats'
 import { effectiveAmountPaid, remainingBalance, roundCents } from '@/lib/dieselExpenseBalance'
 import { movingAverage, projectLinear } from '@/lib/forecast'
 
@@ -99,11 +98,13 @@ export type RentCollectionSummary = {
  * (periodMonth/periodYear), not the date it happened to be created or paid.
  */
 export async function getRentCollectionSummary(
-  period: DashboardPeriod,
+  startDate: string,
+  endDate: string,
 ): Promise<RentCollectionSummary> {
   try {
     const payload = await getPayload({ config: configPromise })
-    const window = buildRangeWindow(period)
+    const windowStart = new Date(startDate)
+    const windowEnd = new Date(endDate)
 
     const result = await payload.find({
       collection: 'invoices',
@@ -118,7 +119,7 @@ export async function getRentCollectionSummary(
 
     for (const doc of result.docs as InvoiceDoc[]) {
       const periodDate = invoicePeriodDate(doc)
-      if (!periodDate || periodDate < window.start || periodDate > window.end) continue
+      if (!periodDate || periodDate < windowStart || periodDate > windowEnd) continue
 
       invoiceCount += 1
       totalBilled += roundCents(Number(doc.totalAmount) || 0)

@@ -5,10 +5,7 @@ import { headers as getHeaders } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { getPayload } from 'payload'
 import type { DateRange } from '@/components/ui/date-range-filter'
-import {
-  getGeneratorDashboardStats as getGeneratorDashboardStatsFromLib,
-  type DashboardPeriod,
-} from '@/lib/generatorStats'
+import { getGeneratorDashboardStats as getGeneratorDashboardStatsFromLib } from '@/lib/generatorStats'
 import { remainingBalance, type DieselPayableDoc } from '@/lib/dieselExpenseBalance'
 import { projectLinear } from '@/lib/forecast'
 
@@ -75,36 +72,16 @@ export async function getExpensesByDateRange(range: DateRange, monthIndex?: numb
 }
 
 // Get diesel expenses by date range
-export async function getDieselExpensesByDateRange(range: DateRange, monthIndex?: number) {
+export async function getDieselExpensesInRange(startDate: string, endDate: string) {
   try {
-    const now = new Date()
-    let startDate = new Date()
-    let endDate = new Date()
-
-    switch (range) {
-      case 'month':
-        // Show specific month (default to current month if no monthIndex provided)
-        const targetMonth = monthIndex !== undefined ? monthIndex : now.getMonth()
-        const targetYear = now.getFullYear()
-        startDate = new Date(targetYear, targetMonth, 1)
-        endDate = new Date(targetYear, targetMonth + 1, 0, 23, 59, 59, 999)
-        break
-      case 'quarter':
-        startDate.setMonth(now.getMonth() - 3)
-        break
-      case 'year':
-        startDate.setFullYear(now.getFullYear() - 1)
-        break
-    }
-
     const payload = await getPayload({ config: configPromise })
 
     const expenses = await payload.find({
       collection: 'diesel-expenses',
       where: {
         date: {
-          greater_than_equal: startDate.toISOString(),
-          less_than_equal: endDate.toISOString(),
+          greater_than_equal: startDate,
+          less_than_equal: endDate,
         },
       },
       sort: 'date',
@@ -232,7 +209,7 @@ export async function getCurrentMonthDieselExpenses() {
 }
 
 // Get Building Payments
-export async function getPaymentsByBuilding() {
+export async function getPaymentsByBuilding(startDate: string, endDate: string) {
   try {
     const payload = await getPayload({ config: configPromise })
 
@@ -242,11 +219,17 @@ export async function getPaymentsByBuilding() {
       sort: 'name',
     })
 
-    // Get all payments with tenant and building information
+    // Get payments in range with tenant and building information
     const payments = await payload.find({
       collection: 'payments',
       depth: 2,
       sort: 'date',
+      where: {
+        date: {
+          greater_than_equal: startDate,
+          less_than_equal: endDate,
+        },
+      },
     })
 
     // Calculate totals by building
@@ -564,10 +547,10 @@ export async function getGeneratorHoursByDay(range: DateRange, monthIndex?: numb
   }
 }
 
-export async function getGeneratorDashboardStats(period: DashboardPeriod) {
+export async function getGeneratorDashboardStats(startDate: string, endDate: string) {
   try {
     const payload = await getPayload({ config: configPromise })
-    return await getGeneratorDashboardStatsFromLib(payload, period)
+    return await getGeneratorDashboardStatsFromLib(payload, new Date(startDate), new Date(endDate))
   } catch (error) {
     console.error('Error getting generator dashboard stats:', error)
     return null
@@ -575,27 +558,8 @@ export async function getGeneratorDashboardStats(period: DashboardPeriod) {
 }
 
 // Get general expenses grouped by expense category
-export async function getExpensesByCategory(range: DateRange, monthIndex?: number) {
+export async function getExpensesByCategory(startDate: string, endDate: string) {
   try {
-    const now = new Date()
-    let startDate = new Date()
-    let endDate = new Date()
-
-    switch (range) {
-      case 'month':
-        const targetMonth = monthIndex !== undefined ? monthIndex : now.getMonth()
-        const targetYear = now.getFullYear()
-        startDate = new Date(targetYear, targetMonth, 1)
-        endDate = new Date(targetYear, targetMonth + 1, 0, 23, 59, 59, 999)
-        break
-      case 'quarter':
-        startDate.setMonth(now.getMonth() - 3)
-        break
-      case 'year':
-        startDate.setFullYear(now.getFullYear() - 1)
-        break
-    }
-
     const payload = await getPayload({ config: configPromise })
 
     const expenses = await payload.find({
@@ -603,8 +567,8 @@ export async function getExpensesByCategory(range: DateRange, monthIndex?: numbe
       depth: 1,
       where: {
         date: {
-          greater_than_equal: startDate.toISOString(),
-          less_than_equal: endDate.toISOString(),
+          greater_than_equal: startDate,
+          less_than_equal: endDate,
         },
       },
       sort: 'date',

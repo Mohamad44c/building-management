@@ -1,93 +1,73 @@
 'use client'
 
-import type { DashboardPeriodPreset } from '@/lib/generatorStats'
+import type { DashboardDateFilterPreset, DashboardDateFilterValue } from '@/lib/dashboardDateFilter'
+import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
-export type DashboardPeriodValue = {
-  preset: DashboardPeriodPreset
-  from?: string
-  to?: string
-}
-
 type DashboardPeriodFilterProps = {
-  value: DashboardPeriodValue
-  onChange: (value: DashboardPeriodValue) => void
+  value: DashboardDateFilterValue
+  onChange: (value: DashboardDateFilterValue) => void
 }
 
-const presetOptions: Array<{ value: DashboardPeriodPreset; label: string }> = [
-  { value: 'today', label: 'Today' },
-  { value: 'week', label: 'This week' },
-  { value: 'month', label: 'This month' },
-  { value: 'year', label: 'This year' },
-  { value: 'custom', label: 'Custom range' },
+const presetOptions: Array<{ value: DashboardDateFilterPreset; label: string }> = [
+  { value: 'this-month', label: 'This month' },
+  { value: 'last-month', label: 'Last month' },
+  { value: 'last-3-months', label: 'Last 3 months' },
 ]
 
-const todayDate = () => new Date().toISOString().slice(0, 10)
-
 export function DashboardPeriodFilter({ value, onChange }: DashboardPeriodFilterProps) {
-  const handlePresetChange = (preset: DashboardPeriodPreset) => {
-    if (preset === 'custom') {
-      onChange({
-        preset,
-        from: value.from || todayDate(),
-        to: value.to || todayDate(),
-      })
-      return
-    }
+  const now = new Date()
+  const currentYear = now.getFullYear()
+  const currentMonth = now.getMonth()
 
-    onChange({ preset })
+  // Months for the current year, up to and including the current month only.
+  const availableMonths = Array.from({ length: currentMonth + 1 }, (_, index) => {
+    const monthDate = new Date(currentYear, index, 1)
+    return {
+      value: index,
+      label: monthDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+    }
+  })
+
+  const handlePresetClick = (preset: DashboardDateFilterPreset) => {
+    onChange({ mode: 'preset', preset })
   }
 
-  const handleCustomDateChange = (key: 'from' | 'to', dateValue: string) => {
-    onChange({
-      preset: 'custom',
-      from: key === 'from' ? dateValue : value.from || todayDate(),
-      to: key === 'to' ? dateValue : value.to || todayDate(),
-    })
+  const handleMonthChange = (monthValue: string) => {
+    onChange({ mode: 'month', monthIndex: parseInt(monthValue, 10), year: currentYear })
   }
 
   return (
-    <div className="flex flex-col gap-3 rounded-lg border p-3 sm:flex-row sm:items-end">
-      <div className="w-full sm:w-[220px]">
-        <label className="mb-2 block text-xs text-muted-foreground">Period</label>
-        <Select value={value.preset} onValueChange={(next) => handlePresetChange(next as DashboardPeriodPreset)}>
-          <SelectTrigger>
-            <SelectValue placeholder="Select period" />
-          </SelectTrigger>
-          <SelectContent>
-            {presetOptions.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+      <div className="flex flex-wrap items-center gap-2">
+        {presetOptions.map((option) => (
+          <Button
+            key={option.value}
+            type="button"
+            size="sm"
+            variant={value.mode === 'preset' && value.preset === option.value ? 'default' : 'outline'}
+            onClick={() => handlePresetClick(option.value)}
+          >
+            {option.label}
+          </Button>
+        ))}
       </div>
 
-      {value.preset === 'custom' ? (
-        <>
-          <div className="w-full sm:w-[180px]">
-            <label className="mb-2 block text-xs text-muted-foreground">From</label>
-            <input
-              type="date"
-              value={value.from || todayDate()}
-              onChange={(event) => handleCustomDateChange('from', event.target.value)}
-              aria-label="Custom period start date"
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
-            />
-          </div>
-          <div className="w-full sm:w-[180px]">
-            <label className="mb-2 block text-xs text-muted-foreground">To</label>
-            <input
-              type="date"
-              value={value.to || todayDate()}
-              onChange={(event) => handleCustomDateChange('to', event.target.value)}
-              aria-label="Custom period end date"
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
-            />
-          </div>
-        </>
-      ) : null}
+      <Select
+        value={value.mode === 'month' ? value.monthIndex.toString() : ''}
+        onValueChange={handleMonthChange}
+      >
+        <SelectTrigger className="w-full sm:w-[200px]" aria-label="Pick a specific month">
+          <SelectValue placeholder="Pick a month..." />
+        </SelectTrigger>
+        <SelectContent>
+          {availableMonths.map((month) => (
+            <SelectItem key={month.value} value={month.value.toString()}>
+              {month.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </div>
   )
 }

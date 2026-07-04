@@ -1,17 +1,8 @@
 'use client'
 
-import { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { DateRangeFilter, type DateRange } from '@/components/ui/date-range-filter'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { useExpensesByCategory } from '@/hooks/use-expenses'
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts'
+import { CartesianGrid, Line, LineChart, XAxis, YAxis } from 'recharts'
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
 
 const chartConfig = {
@@ -24,53 +15,24 @@ const chartConfig = {
   },
 }
 
-const rangeLabels: Record<DateRange, string> = {
-  month: 'Single month',
-  quarter: 'Last 3 months',
-  year: 'Last 12 months',
+type Props = {
+  startDate: string
+  endDate: string
 }
 
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value)
 
-export function ExpensesByCategoryChart() {
-  const currentMonth = new Date().getMonth()
-  const [range, setRange] = useState<DateRange>('month')
-  const [selectedMonth, setSelectedMonth] = useState<number>(currentMonth)
-
-  const monthIndexForQuery = range === 'month' ? selectedMonth : undefined
-  const { data, isLoading } = useExpensesByCategory(range, monthIndexForQuery)
-
-  const handleRangeChange = (value: string) => {
-    setRange(value as DateRange)
-  }
+export function ExpensesByCategoryChart({ startDate, endDate }: Props) {
+  const { data, isLoading } = useExpensesByCategory(startDate, endDate)
 
   return (
     <Card className="md:col-span-2 lg:col-span-4">
-      <CardHeader className="flex flex-col gap-2 space-y-0 pb-2 sm:flex-row sm:items-start sm:justify-between">
-        <div className="space-y-1">
-          <CardTitle className="text-sm font-medium sm:text-base">Expenses by category</CardTitle>
-          <CardDescription className="text-xs sm:text-sm">
-            General building expenses grouped by expense category.
-          </CardDescription>
-        </div>
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-2">
-          <Select value={range} onValueChange={handleRangeChange}>
-            <SelectTrigger className="w-full sm:w-[160px]" aria-label="Time range for expense category chart">
-              <SelectValue placeholder="Range" />
-            </SelectTrigger>
-            <SelectContent>
-              {(Object.keys(rangeLabels) as DateRange[]).map((key) => (
-                <SelectItem key={key} value={key}>
-                  {rangeLabels[key]}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {range === 'month' ? (
-            <DateRangeFilter onMonthChange={setSelectedMonth} defaultValue={selectedMonth} />
-          ) : null}
-        </div>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm font-medium sm:text-base">Expenses by category</CardTitle>
+        <CardDescription className="text-xs sm:text-sm">
+          General building expenses grouped by expense category.
+        </CardDescription>
       </CardHeader>
       <CardContent>
         {isLoading ? (
@@ -81,26 +43,24 @@ export function ExpensesByCategoryChart() {
           </div>
         ) : (
           <ChartContainer config={chartConfig} className="h-[250px] w-full sm:h-[300px]">
-            <BarChart
-              data={data.categories}
-              layout="vertical"
-              margin={{ left: 4, right: 16, top: 8, bottom: 4 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+            <LineChart data={data.categories} margin={{ left: 4, right: 16, top: 8, bottom: 4 }}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} />
               <XAxis
-                type="number"
+                dataKey="name"
+                tickLine={false}
+                axisLine={false}
+                fontSize={11}
+                interval="preserveStartEnd"
+                angle={data.categories.length > 6 ? -35 : 0}
+                textAnchor={data.categories.length > 6 ? 'end' : 'middle'}
+                height={data.categories.length > 6 ? 56 : 32}
+              />
+              <YAxis
                 tickLine={false}
                 axisLine={false}
                 fontSize={12}
                 tickFormatter={(v) => `$${Number(v).toFixed(0)}`}
-              />
-              <YAxis
-                type="category"
-                dataKey="name"
-                tickLine={false}
-                axisLine={false}
-                fontSize={12}
-                width={110}
+                width={56}
               />
               <ChartTooltip
                 content={
@@ -109,8 +69,16 @@ export function ExpensesByCategoryChart() {
                   />
                 }
               />
-              <Bar dataKey="totalAmount" fill="var(--color-totalAmount)" radius={[0, 4, 4, 0]} />
-            </BarChart>
+              <Line
+                type="monotone"
+                dataKey="totalAmount"
+                stroke="var(--color-totalAmount)"
+                strokeWidth={2}
+                dot={{ r: 3, fill: 'var(--color-totalAmount)' }}
+                activeDot={{ r: 5 }}
+                connectNulls
+              />
+            </LineChart>
           </ChartContainer>
         )}
       </CardContent>

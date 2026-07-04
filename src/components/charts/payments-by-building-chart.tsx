@@ -5,8 +5,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Building2 } from 'lucide-react'
 
-export function PaymentsByBuildingChart() {
-  const { data, isLoading, error } = usePayments()
+type Props = {
+  startDate: string
+  endDate: string
+}
+
+export function PaymentsByBuildingChart({ startDate, endDate }: Props) {
+  const { data, isLoading, error } = usePayments(startDate, endDate)
 
   if (isLoading) {
     return (

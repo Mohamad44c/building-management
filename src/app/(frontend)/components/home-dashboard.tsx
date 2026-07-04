@@ -7,7 +7,6 @@ import { PaymentsByBuildingChart } from '@/components/charts/payments-by-buildin
 import { TenantsByBuildingChart } from '@/components/charts/tenants-by-building-chart'
 import { DieselPricePerLiterChart } from '@/components/charts/diesel-price-per-liter-chart'
 import { GeneratorHoursByDayChart } from '@/components/charts/generator-hours-by-day-chart'
-import type { DashboardPeriodValue } from '@/components/ui/dashboard-period-filter'
 import { GeneratorStatCards } from '@/components/charts/generator-stat-cards'
 import { DieselOutstandingBalanceCard } from '@/components/charts/diesel-outstanding-balance-card'
 import { RentCollectionSummaryCards } from '@/components/charts/rent-collection-summary-cards'
@@ -16,20 +15,25 @@ import { ExpensesByCategoryChart } from '@/components/charts/expenses-by-categor
 import { DieselPriceForecastCard } from '@/components/charts/diesel-price-forecast-card'
 import { CollectionForecastCard } from '@/components/charts/collection-forecast-card'
 import { GeneratorMaintenanceForecastCard } from '@/components/charts/generator-maintenance-forecast-card'
+import { resolveDashboardDateWindow, type DashboardDateFilterValue } from '@/lib/dashboardDateFilter'
 
 import { DashboardHero } from './dashboard-hero'
 import { DashboardSection } from './dashboard-section'
 
-const defaultPeriod: DashboardPeriodValue = {
-  preset: 'month',
+const defaultFilter: DashboardDateFilterValue = {
+  mode: 'preset',
+  preset: 'this-month',
 }
 
 export function HomeDashboard() {
-  const [period, setPeriod] = useState<DashboardPeriodValue>(defaultPeriod)
+  const [filter, setFilter] = useState<DashboardDateFilterValue>(defaultFilter)
+  const { start, end } = resolveDashboardDateWindow(filter)
+  const startDate = start.toISOString()
+  const endDate = end.toISOString()
 
   return (
     <div className="mx-auto w-full max-w-[1600px] space-y-10 p-4 sm:space-y-12 sm:p-6 lg:space-y-14 lg:p-8">
-      <DashboardHero period={period} onPeriodChange={setPeriod} />
+      <DashboardHero period={filter} onPeriodChange={setFilter} />
 
       <DashboardSection
         title="Generator & fuel snapshot"
@@ -37,7 +41,7 @@ export function HomeDashboard() {
         icon={Gauge}
         iconClassName="text-amber-600 dark:text-amber-400"
       >
-        <GeneratorStatCards period={period} />
+        <GeneratorStatCards startDate={startDate} endDate={endDate} />
       </DashboardSection>
 
       <DashboardSection
@@ -61,7 +65,7 @@ export function HomeDashboard() {
       >
         <div className="grid gap-4 sm:gap-5 md:grid-cols-2 lg:grid-cols-10">
           <DieselOutstandingBalanceCard />
-          <PaymentsByBuildingChart />
+          <PaymentsByBuildingChart startDate={startDate} endDate={endDate} />
           <TenantsByBuildingChart />
         </div>
       </DashboardSection>
@@ -73,7 +77,7 @@ export function HomeDashboard() {
         iconClassName="text-emerald-600 dark:text-emerald-400"
       >
         <div className="space-y-4 sm:space-y-5">
-          <RentCollectionSummaryCards period={period} />
+          <RentCollectionSummaryCards startDate={startDate} endDate={endDate} />
           <div className="grid gap-4 sm:gap-5 md:grid-cols-2 lg:grid-cols-5">
             <ReceivablesAgingChart />
           </div>
@@ -87,9 +91,9 @@ export function HomeDashboard() {
         iconClassName="text-violet-600 dark:text-violet-400"
       >
         <div className="grid gap-4 sm:gap-5 md:grid-cols-2 lg:grid-cols-8">
-          <DieselPricePerLiterChart />
-          <ExpensesByCategoryChart />
-          <GeneratorHoursByDayChart period={period} />
+          <DieselPricePerLiterChart startDate={startDate} endDate={endDate} />
+          <ExpensesByCategoryChart startDate={startDate} endDate={endDate} />
+          <GeneratorHoursByDayChart startDate={startDate} endDate={endDate} />
         </div>
       </DashboardSection>
 

@@ -1,20 +1,20 @@
 'use client'
 
-import type { DashboardPeriod } from '@/lib/generatorStats'
 import { useRentCollectionSummary } from '@/hooks/use-invoices'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Receipt, HandCoins, AlertTriangle, Percent } from 'lucide-react'
 
 type Props = {
-  period: DashboardPeriod
+  startDate: string
+  endDate: string
 }
 
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value)
 
-export function RentCollectionSummaryCards({ period }: Props) {
-  const { data, isLoading, isError } = useRentCollectionSummary(period)
+export function RentCollectionSummaryCards({ startDate, endDate }: Props) {
+  const { data, isLoading, isError } = useRentCollectionSummary(startDate, endDate)
 
   if (isLoading) {
     return (

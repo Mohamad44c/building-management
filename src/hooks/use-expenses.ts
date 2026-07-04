@@ -1,15 +1,14 @@
 import {
   getExpensesByDateRange,
-  getDieselExpensesByDateRange,
   getGeneratorExpensesByDateRange,
   getGeneratorExpensesByCategory,
   getDieselOutstandingSummary,
+  getDieselExpensesInRange,
   getExpensesByCategory,
   getDieselPriceForecast,
   getGeneratorMaintenanceForecast,
 } from '@/server/expenses'
 import { useQuery } from '@tanstack/react-query'
-import type { DateRange } from '@/components/ui/date-range-filter'
 
 export function useExpenses(monthIndex?: number) {
   return useQuery({
@@ -18,17 +17,10 @@ export function useExpenses(monthIndex?: number) {
   })
 }
 
-export function useDieselExpenses(monthIndex?: number) {
+export function useDieselExpensesInRange(startDate: string, endDate: string) {
   return useQuery({
-    queryKey: ['diesel-expenses', monthIndex],
-    queryFn: () => getDieselExpensesByDateRange('month', monthIndex),
-  })
-}
-
-export function useDieselExpensesByDateRange(range: DateRange, monthIndex?: number) {
-  return useQuery({
-    queryKey: ['diesel-expenses-by-range', range, monthIndex ?? null],
-    queryFn: () => getDieselExpensesByDateRange(range, monthIndex),
+    queryKey: ['diesel-expenses-in-range', startDate, endDate],
+    queryFn: () => getDieselExpensesInRange(startDate, endDate),
   })
 }
 
@@ -53,10 +45,10 @@ export function useDieselOutstandingSummary() {
   })
 }
 
-export function useExpensesByCategory(range: DateRange, monthIndex?: number) {
+export function useExpensesByCategory(startDate: string, endDate: string) {
   return useQuery({
-    queryKey: ['expenses-by-category', range, monthIndex ?? null],
-    queryFn: () => getExpensesByCategory(range, monthIndex),
+    queryKey: ['expenses-by-category', startDate, endDate],
+    queryFn: () => getExpensesByCategory(startDate, endDate),
   })
 }
 

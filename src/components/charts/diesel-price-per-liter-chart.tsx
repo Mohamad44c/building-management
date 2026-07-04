@@ -1,16 +1,8 @@
 'use client'
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { DateRangeFilter, type DateRange } from '@/components/ui/date-range-filter'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { useDieselExpensesByDateRange } from '@/hooks/use-expenses'
-import { useMemo, useState } from 'react'
+import { useDieselExpensesInRange } from '@/hooks/use-expenses'
+import { useMemo } from 'react'
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from 'recharts'
 import { DieselExpense } from '@/payload-types'
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
@@ -25,10 +17,9 @@ const chartConfig = {
   },
 }
 
-const rangeLabels: Record<DateRange, string> = {
-  month: 'Single month',
-  quarter: 'Last 3 months',
-  year: 'Last 12 months',
+type Props = {
+  startDate: string
+  endDate: string
 }
 
 const getPricePerLiterUsd = (expense: DieselExpense): number => {
@@ -43,13 +34,8 @@ const getPricePerLiterUsd = (expense: DieselExpense): number => {
   return 0
 }
 
-export function DieselPricePerLiterChart() {
-  const currentMonth = new Date().getMonth()
-  const [range, setRange] = useState<DateRange>('year')
-  const [selectedMonth, setSelectedMonth] = useState<number>(currentMonth)
-
-  const monthIndexForQuery = range === 'month' ? selectedMonth : undefined
-  const { data: expenses, isLoading } = useDieselExpensesByDateRange(range, monthIndexForQuery)
+export function DieselPricePerLiterChart({ startDate, endDate }: Props) {
+  const { data: expenses, isLoading } = useDieselExpensesInRange(startDate, endDate)
 
   const chartData = useMemo(() => {
     if (!expenses?.length) {
@@ -73,38 +59,15 @@ export function DieselPricePerLiterChart() {
       .map(({ dateLabel, pricePerLiter }) => ({ dateLabel, pricePerLiter }))
   }, [expenses])
 
-  const handleRangeChange = (value: string) => {
-    setRange(value as DateRange)
-  }
-
   return (
     <Card className="md:col-span-2 lg:col-span-4">
-      <CardHeader className="flex flex-col gap-2 space-y-0 pb-2 sm:flex-row sm:items-start sm:justify-between">
-        <div className="space-y-1">
-          <CardTitle className="text-sm font-medium sm:text-base">
-            Diesel price per liter over time
-          </CardTitle>
-          <CardDescription className="text-xs sm:text-sm">
-            Effective unit price from each delivery (from stored price per liter or price per 1000 L).
-          </CardDescription>
-        </div>
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-2">
-          <Select value={range} onValueChange={handleRangeChange}>
-            <SelectTrigger className="w-full sm:w-[160px]" aria-label="Time range for price chart">
-              <SelectValue placeholder="Range" />
-            </SelectTrigger>
-            <SelectContent>
-              {(Object.keys(rangeLabels) as DateRange[]).map((key) => (
-                <SelectItem key={key} value={key}>
-                  {rangeLabels[key]}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {range === 'month' ? (
-            <DateRangeFilter onMonthChange={setSelectedMonth} defaultValue={selectedMonth} />
-          ) : null}
-        </div>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm font-medium sm:text-base">
+          Diesel price per liter over time
+        </CardTitle>
+        <CardDescription className="text-xs sm:text-sm">
+          Effective unit price from each delivery (from stored price per liter or price per 1000 L).
+        </CardDescription>
       </CardHeader>
       <CardContent>
         {isLoading ? (

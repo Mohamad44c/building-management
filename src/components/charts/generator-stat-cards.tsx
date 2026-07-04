@@ -1,12 +1,12 @@
 'use client'
 
-import type { DashboardPeriod } from '@/lib/generatorStats'
 import { useGeneratorDashboardStats } from '@/hooks/use-generator-dashboard-stats'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Fuel, Gauge, ReceiptText, Timer, CalendarDays, HandCoins } from 'lucide-react'
 
 type Props = {
-  period: DashboardPeriod
+  startDate: string
+  endDate: string
 }
 
 const formatCurrency = (value: number) =>
@@ -32,8 +32,8 @@ const renderComparison = (current: number, previous: number, formatter: (value: 
   )
 }
 
-export function GeneratorStatCards({ period }: Props) {
-  const { data, isLoading, isError } = useGeneratorDashboardStats(period)
+export function GeneratorStatCards({ startDate, endDate }: Props) {
+  const { data, isLoading, isError } = useGeneratorDashboardStats(startDate, endDate)
 
   if (isLoading) {
     return (
