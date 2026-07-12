@@ -195,7 +195,7 @@ export const InvoicePdfDocument = ({
       <View style={styles.banner}>
         <View>
           <Text style={styles.title}>Invoice</Text>
-          <Text style={styles.issuer}>{buildingName}</Text>
+          <Text style={styles.issuer}>Elissar Building</Text>
           <Text style={styles.subtitle}>
             {MONTH_NAMES[periodMonth - 1] ?? periodMonth} {periodYear}
           </Text>
