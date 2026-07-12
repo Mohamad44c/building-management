@@ -49,6 +49,12 @@ const styles = StyleSheet.create({
     fontFamily: 'Helvetica-Bold',
     color: '#ffffff',
   },
+  issuer: {
+    fontSize: 13,
+    fontFamily: 'Helvetica-Bold',
+    color: '#dbeafe',
+    marginTop: 2,
+  },
   subtitle: {
     fontSize: 11,
     color: '#dbeafe',
@@ -189,6 +195,7 @@ export const InvoicePdfDocument = ({
       <View style={styles.banner}>
         <View>
           <Text style={styles.title}>Invoice</Text>
+          <Text style={styles.issuer}>{buildingName}</Text>
           <Text style={styles.subtitle}>
             {MONTH_NAMES[periodMonth - 1] ?? periodMonth} {periodYear}
           </Text>
