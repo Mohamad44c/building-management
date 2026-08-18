@@ -1,5 +1,6 @@
 import { Document, Page, StyleSheet, Text, View, renderToBuffer } from '@react-pdf/renderer'
 import type { InvoiceLineItem } from './invoiceCalc'
+import { amountToEnglishWords } from './numberToWords'
 
 export type InvoicePdfProps = {
   tenantName: string
@@ -27,6 +28,7 @@ const MONTH_NAMES = [
   'December',
 ]
 
+const CURRENCY_CODE = 'USD'
 const ACCENT = '#1d4ed8'
 
 const styles = StyleSheet.create({
@@ -36,28 +38,32 @@ const styles = StyleSheet.create({
     fontFamily: 'Helvetica',
     color: '#1a1a1a',
   },
+  brandFixed: {
+    position: 'absolute',
+    top: 24,
+    left: 40,
+    fontSize: 12,
+    fontFamily: 'Helvetica-Bold',
+    color: ACCENT,
+  },
   banner: {
-    backgroundColor: ACCENT,
     paddingHorizontal: 40,
-    paddingVertical: 28,
+    paddingTop: 56,
+    paddingBottom: 20,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e7eb',
   },
   title: {
     fontSize: 24,
     fontFamily: 'Helvetica-Bold',
-    color: '#ffffff',
-  },
-  issuer: {
-    fontSize: 13,
-    fontFamily: 'Helvetica-Bold',
-    color: '#dbeafe',
-    marginTop: 2,
+    color: ACCENT,
   },
   subtitle: {
     fontSize: 11,
-    color: '#dbeafe',
+    color: '#666666',
     marginTop: 4,
   },
   bannerRight: {
@@ -65,13 +71,14 @@ const styles = StyleSheet.create({
   },
   bannerRightLabel: {
     fontSize: 9,
-    color: '#dbeafe',
+    color: '#888888',
     marginBottom: 2,
+    textTransform: 'uppercase',
   },
   bannerRightValue: {
     fontSize: 13,
     fontFamily: 'Helvetica-Bold',
-    color: '#ffffff',
+    color: ACCENT,
   },
   body: {
     padding: 40,
@@ -105,36 +112,35 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     paddingVertical: 10,
     paddingHorizontal: 12,
-  },
-  tableRowAlt: {
-    backgroundColor: '#f8fafc',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e7eb',
   },
   tableHeaderRow: {
     flexDirection: 'row',
-    backgroundColor: '#1a1a1a',
     paddingVertical: 8,
     paddingHorizontal: 12,
-    borderRadius: 3,
+    borderBottomWidth: 1.5,
+    borderBottomColor: '#1a1a1a',
   },
   cellLabel: {
     flex: 1,
   },
   cellAmount: {
-    width: 100,
+    width: 110,
     textAlign: 'right',
   },
   headerCellText: {
     fontFamily: 'Helvetica-Bold',
     fontSize: 10,
-    color: '#ffffff',
+    color: '#1a1a1a',
   },
   totalRow: {
     flexDirection: 'row',
-    backgroundColor: '#eff6ff',
     marginTop: 10,
     paddingVertical: 14,
     paddingHorizontal: 12,
-    borderRadius: 3,
+    borderTopWidth: 1.5,
+    borderTopColor: ACCENT,
   },
   totalLabel: {
     flex: 1,
@@ -143,11 +149,18 @@ const styles = StyleSheet.create({
     color: ACCENT,
   },
   totalAmount: {
-    width: 100,
+    width: 110,
     textAlign: 'right',
     fontFamily: 'Helvetica-Bold',
     fontSize: 13,
     color: ACCENT,
+  },
+  amountInWords: {
+    marginTop: 8,
+    paddingHorizontal: 12,
+    fontSize: 9,
+    fontFamily: 'Helvetica-Oblique',
+    color: '#555555',
   },
   footer: {
     marginTop: 32,
@@ -170,7 +183,7 @@ const styles = StyleSheet.create({
   },
 })
 
-const formatCurrency = (n: number): string => `$${n.toFixed(2)}`
+const formatCurrency = (n: number): string => `$${n.toFixed(2)} ${CURRENCY_CODE}`
 
 const formatDueDate = (dueDate?: string | null): string => {
   if (!dueDate) return '—'
@@ -192,10 +205,13 @@ export const InvoicePdfDocument = ({
 }: InvoicePdfProps) => (
   <Document>
     <Page size="A4" style={styles.page}>
+      <Text style={styles.brandFixed} fixed>
+        Elissar Building
+      </Text>
+
       <View style={styles.banner}>
         <View>
           <Text style={styles.title}>Invoice</Text>
-          <Text style={styles.issuer}>Elissar Building</Text>
           <Text style={styles.subtitle}>
             {MONTH_NAMES[periodMonth - 1] ?? periodMonth} {periodYear}
           </Text>
@@ -221,13 +237,10 @@ export const InvoicePdfDocument = ({
         <View style={styles.table}>
           <View style={styles.tableHeaderRow}>
             <Text style={[styles.cellLabel, styles.headerCellText]}>Description</Text>
-            <Text style={[styles.cellAmount, styles.headerCellText]}>Amount</Text>
+            <Text style={[styles.cellAmount, styles.headerCellText]}>Amount ({CURRENCY_CODE})</Text>
           </View>
           {lineItems.map((item, index) => (
-            <View
-              style={index % 2 === 1 ? [styles.tableRow, styles.tableRowAlt] : styles.tableRow}
-              key={`${item.label}-${index}`}
-            >
+            <View style={styles.tableRow} key={`${item.label}-${index}`}>
               <Text style={styles.cellLabel}>{item.label}</Text>
               <Text style={styles.cellAmount}>{formatCurrency(item.amount)}</Text>
             </View>
@@ -238,6 +251,9 @@ export const InvoicePdfDocument = ({
           <Text style={styles.totalLabel}>Total Due</Text>
           <Text style={styles.totalAmount}>{formatCurrency(totalAmount)}</Text>
         </View>
+        <Text style={styles.amountInWords}>
+          Amount in words: {amountToEnglishWords(totalAmount)}
+        </Text>
 
         <View style={styles.footer}>
           <Text style={styles.footerText}>Thank you for your business.</Text>
