@@ -20,7 +20,10 @@ export const Invoices: CollectionConfig = {
     ],
     components: {
       edit: {
-        beforeDocumentControls: ['/components/admin/GenerateInvoicePdfButton#GenerateInvoicePdfButton'],
+        beforeDocumentControls: [
+          '/components/admin/GenerateInvoicePdfButton#GenerateInvoicePdfButton',
+          '/components/admin/GenerateReceiptPdfButton#GenerateReceiptPdfButton',
+        ],
       },
     },
   },
@@ -147,6 +150,16 @@ export const Invoices: CollectionConfig = {
         position: 'sidebar',
         readOnly: true,
         description: 'Set automatically after PDF generation',
+      },
+    },
+    {
+      name: 'receiptFile',
+      type: 'relationship',
+      relationTo: 'receipt-pdfs',
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+        description: 'Set automatically after receipt generation',
       },
     },
   ],

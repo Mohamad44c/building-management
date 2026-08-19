@@ -18,6 +18,7 @@ import { Tenants } from './collections/Tenants'
 import { Payments } from './collections/Payments'
 import { Invoices } from './collections/Invoices'
 import { InvoicePdfs } from './collections/InvoicePdfs'
+import { ReceiptPdfs } from './collections/ReceiptPdfs'
  
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -43,6 +44,7 @@ export default buildConfig({
     Tenants,
     Invoices,
     InvoicePdfs,
+    ReceiptPdfs,
     Users,
   ],
   editor: lexicalEditor(),
@@ -59,7 +61,7 @@ export default buildConfig({
   plugins: [
     payloadCloudPlugin(),
     s3Storage({
-      collections: { 'invoice-pdfs': true },
+      collections: { 'invoice-pdfs': true, 'receipt-pdfs': true },
       bucket: process.env.S3_BUCKET || '',
       config: {
         region: process.env.S3_REGION,

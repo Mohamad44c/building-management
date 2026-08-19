@@ -77,6 +77,7 @@ export interface Config {
     tenants: Tenant;
     invoices: Invoice;
     'invoice-pdfs': InvoicePdf;
+    'receipt-pdfs': ReceiptPdf;
     users: User;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -94,6 +95,7 @@ export interface Config {
     tenants: TenantsSelect<false> | TenantsSelect<true>;
     invoices: InvoicesSelect<false> | InvoicesSelect<true>;
     'invoice-pdfs': InvoicePdfsSelect<false> | InvoicePdfsSelect<true>;
+    'receipt-pdfs': ReceiptPdfsSelect<false> | ReceiptPdfsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -353,6 +355,10 @@ export interface Invoice {
    * Set automatically after PDF generation
    */
   pdfFile?: (number | null) | InvoicePdf;
+  /**
+   * Set automatically after receipt generation
+   */
+  receiptFile?: (number | null) | ReceiptPdf;
   updatedAt: string;
   createdAt: string;
 }
@@ -361,6 +367,24 @@ export interface Invoice {
  * via the `definition` "invoice-pdfs".
  */
 export interface InvoicePdf {
+  id: number;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "receipt-pdfs".
+ */
+export interface ReceiptPdf {
   id: number;
   updatedAt: string;
   createdAt: string;
@@ -444,6 +468,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'invoice-pdfs';
         value: number | InvoicePdf;
+      } | null)
+    | ({
+        relationTo: 'receipt-pdfs';
+        value: number | ReceiptPdf;
       } | null)
     | ({
         relationTo: 'users';
@@ -617,6 +645,7 @@ export interface InvoicesSelect<T extends boolean = true> {
   isPaid?: T;
   status?: T;
   pdfFile?: T;
+  receiptFile?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -625,6 +654,23 @@ export interface InvoicesSelect<T extends boolean = true> {
  * via the `definition` "invoice-pdfs_select".
  */
 export interface InvoicePdfsSelect<T extends boolean = true> {
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "receipt-pdfs_select".
+ */
+export interface ReceiptPdfsSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   url?: T;
