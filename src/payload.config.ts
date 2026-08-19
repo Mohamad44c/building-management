@@ -61,7 +61,10 @@ export default buildConfig({
   plugins: [
     payloadCloudPlugin(),
     s3Storage({
-      collections: { 'invoice-pdfs': true, 'receipt-pdfs': true },
+      // `prefix: ''` (not just `true`) makes the plugin add a persisted `prefix` field to these
+      // collections, so the per-upload `data.prefix` we pass in src/server/invoices.ts is saved
+      // to the DB and can be read back to reconstruct the S3 key when serving the file.
+      collections: { 'invoice-pdfs': { prefix: '' }, 'receipt-pdfs': { prefix: '' } },
       bucket: process.env.S3_BUCKET || '',
       config: {
         region: process.env.S3_REGION,

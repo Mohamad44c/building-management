@@ -368,6 +368,7 @@ export interface Invoice {
  */
 export interface InvoicePdf {
   id: number;
+  prefix?: string | null;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -386,6 +387,7 @@ export interface InvoicePdf {
  */
 export interface ReceiptPdf {
   id: number;
+  prefix?: string | null;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -654,6 +656,7 @@ export interface InvoicesSelect<T extends boolean = true> {
  * via the `definition` "invoice-pdfs_select".
  */
 export interface InvoicePdfsSelect<T extends boolean = true> {
+  prefix?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;
@@ -671,6 +674,7 @@ export interface InvoicePdfsSelect<T extends boolean = true> {
  * via the `definition` "receipt-pdfs_select".
  */
 export interface ReceiptPdfsSelect<T extends boolean = true> {
+  prefix?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;
