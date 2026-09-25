@@ -1,6 +1,7 @@
 'use server'
 
 import configPromise from '@/payload.config'
+import { requireUser } from '@/server/auth'
 import { headers as getHeaders } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { getPayload } from 'payload'
@@ -29,6 +30,7 @@ export async function getCurrentUser() {
 
 // Get expenses by date range
 export async function getExpensesByDateRange(range: DateRange, monthIndex?: number) {
+  await requireUser()
   try {
     const now = new Date()
     let startDate = new Date()
@@ -73,6 +75,7 @@ export async function getExpensesByDateRange(range: DateRange, monthIndex?: numb
 
 // Get diesel expenses by date range
 export async function getDieselExpensesInRange(startDate: string, endDate: string) {
+  await requireUser()
   try {
     const payload = await getPayload({ config: configPromise })
 
@@ -97,6 +100,7 @@ export async function getDieselExpensesInRange(startDate: string, endDate: strin
 
 // Get total diesel liters used in the current calendar month
 export async function getCurrentMonthDieselLiters() {
+  await requireUser()
   try {
     const now = new Date()
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
@@ -140,6 +144,7 @@ export type DieselOutstandingSummary = {
  * Independent of dashboard date filters.
  */
 export async function getDieselOutstandingSummary(): Promise<DieselOutstandingSummary> {
+  await requireUser()
   try {
     const payload = await getPayload({ config: configPromise })
 
@@ -178,6 +183,7 @@ export async function getDieselOutstandingSummary(): Promise<DieselOutstandingSu
 
 // Get total diesel expenses (amount spent) in the current calendar month
 export async function getCurrentMonthDieselExpenses() {
+  await requireUser()
   try {
     const now = new Date()
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
@@ -210,6 +216,7 @@ export async function getCurrentMonthDieselExpenses() {
 
 // Get Building Payments
 export async function getPaymentsByBuilding(startDate: string, endDate: string) {
+  await requireUser()
   try {
     const payload = await getPayload({ config: configPromise })
 
@@ -266,6 +273,7 @@ export async function getPaymentsByBuilding(startDate: string, endDate: string) 
 
 // Get generator expenses by date range
 export async function getGeneratorExpensesByDateRange(range: DateRange, monthIndex?: number) {
+  await requireUser()
   try {
     const now = new Date()
     let startDate = new Date()
@@ -309,6 +317,7 @@ export async function getGeneratorExpensesByDateRange(range: DateRange, monthInd
 
 // Get generator expenses by category
 export async function getGeneratorExpensesByCategory(range: DateRange, monthIndex?: number) {
+  await requireUser()
   try {
     const now = new Date()
     let startDate = new Date()
@@ -388,6 +397,7 @@ export async function getGeneratorExpensesByCategory(range: DateRange, monthInde
 
 // Get tenant data by building
 export async function getTenantsByBuilding() {
+  await requireUser()
   try {
     const payload = await getPayload({ config: configPromise })
 
@@ -479,6 +489,7 @@ export async function getTenantsByBuilding() {
 
 // Get generator hours by day
 export async function getGeneratorHoursByDay(range: DateRange, monthIndex?: number) {
+  await requireUser()
   try {
     const now = new Date()
     let startDate = new Date()
@@ -548,6 +559,7 @@ export async function getGeneratorHoursByDay(range: DateRange, monthIndex?: numb
 }
 
 export async function getGeneratorDashboardStats(startDate: string, endDate: string) {
+  await requireUser()
   try {
     const payload = await getPayload({ config: configPromise })
     return await getGeneratorDashboardStatsFromLib(payload, new Date(startDate), new Date(endDate))
@@ -559,6 +571,7 @@ export async function getGeneratorDashboardStats(startDate: string, endDate: str
 
 // Get general expenses grouped by expense category
 export async function getExpensesByCategory(startDate: string, endDate: string) {
+  await requireUser()
   try {
     const payload = await getPayload({ config: configPromise })
 
@@ -641,6 +654,7 @@ export type DieselPriceForecast = {
  * projected one delivery ahead. Purely trend-based, not a market forecast.
  */
 export async function getDieselPriceForecast(): Promise<DieselPriceForecast> {
+  await requireUser()
   try {
     const payload = await getPayload({ config: configPromise })
 
@@ -700,6 +714,7 @@ export type GeneratorMaintenanceForecast = {
  * collection yet) — treat this as a rough estimate, not a maintenance schedule.
  */
 export async function getGeneratorMaintenanceForecast(): Promise<GeneratorMaintenanceForecast> {
+  await requireUser()
   try {
     const payload = await getPayload({ config: configPromise })
 

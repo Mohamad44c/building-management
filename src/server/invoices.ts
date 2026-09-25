@@ -1,6 +1,7 @@
 'use server'
 
 import configPromise from '@/payload.config'
+import { requireUser } from '@/server/auth'
 import { getPayload } from 'payload'
 import { renderInvoicePdfBuffer } from '@/lib/InvoicePdfDocument'
 import { renderReceiptPdfBuffer } from '@/lib/ReceiptPdfDocument'
@@ -19,6 +20,7 @@ type GenerateReceiptPdfResult =
 
 export async function generateInvoicePdf(invoiceId: string): Promise<GenerateInvoicePdfResult> {
   try {
+    await requireUser()
     const payload = await getPayload({ config: configPromise })
 
     const invoice = await payload.findByID({ collection: 'invoices', id: invoiceId, depth: 2 })
@@ -83,6 +85,7 @@ export async function generateInvoicePdf(invoiceId: string): Promise<GenerateInv
 
 export async function generateReceiptPdf(invoiceId: string): Promise<GenerateReceiptPdfResult> {
   try {
+    await requireUser()
     const payload = await getPayload({ config: configPromise })
 
     const invoice = await payload.findByID({ collection: 'invoices', id: invoiceId, depth: 2 })
@@ -196,6 +199,7 @@ export async function getRentCollectionSummary(
   startDate: string,
   endDate: string,
 ): Promise<RentCollectionSummary> {
+  await requireUser()
   try {
     const payload = await getPayload({ config: configPromise })
     const windowStart = new Date(startDate)
@@ -268,6 +272,7 @@ export type ReceivablesAging = {
  * Independent of the dashboard period filter, mirroring getDieselOutstandingSummary.
  */
 export async function getReceivablesAging(): Promise<ReceivablesAging> {
+  await requireUser()
   try {
     const payload = await getPayload({ config: configPromise })
 
@@ -332,6 +337,7 @@ export type RentCollectionForecast = {
  * (falls back to a moving average when the trend can't be computed).
  */
 export async function getRentCollectionForecast(): Promise<RentCollectionForecast> {
+  await requireUser()
   try {
     const payload = await getPayload({ config: configPromise })
 
