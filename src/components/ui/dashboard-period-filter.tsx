@@ -1,7 +1,13 @@
 'use client'
 
-import type { DashboardDateFilterPreset, DashboardDateFilterValue } from '@/lib/dashboardDateFilter'
-import { Button } from '@/components/ui/button'
+import { useMemo } from 'react'
+
+import {
+  DASHBOARD_PRESETS,
+  recentMonthOptions,
+  type DashboardDateFilterValue,
+} from '@/lib/dashboardDateFilter'
+import { cn } from '@/lib/utils'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 type DashboardPeriodFilterProps = {
@@ -9,60 +15,53 @@ type DashboardPeriodFilterProps = {
   onChange: (value: DashboardDateFilterValue) => void
 }
 
-const presetOptions: Array<{ value: DashboardDateFilterPreset; label: string }> = [
-  { value: 'this-month', label: 'This month' },
-  { value: 'last-month', label: 'Last month' },
-  { value: 'last-3-months', label: 'Last 3 months' },
-]
-
 export function DashboardPeriodFilter({ value, onChange }: DashboardPeriodFilterProps) {
-  const now = new Date()
-  const currentYear = now.getFullYear()
-  const currentMonth = now.getMonth()
-
-  // Months for the current year, up to and including the current month only.
-  const availableMonths = Array.from({ length: currentMonth + 1 }, (_, index) => {
-    const monthDate = new Date(currentYear, index, 1)
-    return {
-      value: index,
-      label: monthDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
-    }
-  })
-
-  const handlePresetClick = (preset: DashboardDateFilterPreset) => {
-    onChange({ mode: 'preset', preset })
-  }
-
-  const handleMonthChange = (monthValue: string) => {
-    onChange({ mode: 'month', monthIndex: parseInt(monthValue, 10), year: currentYear })
-  }
+  const months = useMemo(() => recentMonthOptions(12), [])
+  const selectedMonth = value.mode === 'month' ? `${value.year}-${value.monthIndex}` : ''
 
   return (
-    <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-      <div className="flex flex-wrap items-center gap-2">
-        {presetOptions.map((option) => (
-          <Button
-            key={option.value}
-            type="button"
-            size="sm"
-            variant={value.mode === 'preset' && value.preset === option.value ? 'default' : 'outline'}
-            onClick={() => handlePresetClick(option.value)}
-          >
-            {option.label}
-          </Button>
-        ))}
+    <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+      <div
+        role="radiogroup"
+        aria-label="Reporting period"
+        className="grid grid-cols-2 gap-1 rounded-lg border bg-muted/50 p-1 sm:inline-flex"
+      >
+        {DASHBOARD_PRESETS.map((option) => {
+          const active = value.mode === 'preset' && value.preset === option.value
+          return (
+            <button
+              key={option.value}
+              type="button"
+              role="radio"
+              aria-checked={active}
+              onClick={() => onChange({ mode: 'preset', preset: option.value })}
+              className={cn(
+                'rounded-md px-3 py-1.5 text-sm font-medium whitespace-nowrap transition-colors outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50',
+                active ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground',
+              )}
+            >
+              {option.label}
+            </button>
+          )
+        })}
       </div>
 
       <Select
-        value={value.mode === 'month' ? value.monthIndex.toString() : ''}
-        onValueChange={handleMonthChange}
+        value={selectedMonth}
+        onValueChange={(v) => {
+          const [year, monthIndex] = v.split('-').map(Number)
+          onChange({ mode: 'month', year, monthIndex })
+        }}
       >
-        <SelectTrigger className="w-full sm:w-[200px]" aria-label="Pick a specific month">
-          <SelectValue placeholder="Pick a month..." />
+        <SelectTrigger
+          className={cn('w-full sm:w-[190px]', value.mode === 'month' && 'border-primary ring-1 ring-primary/30')}
+          aria-label="Pick a specific month"
+        >
+          <SelectValue placeholder="Pick a month…" />
         </SelectTrigger>
         <SelectContent>
-          {availableMonths.map((month) => (
-            <SelectItem key={month.value} value={month.value.toString()}>
+          {months.map((month) => (
+            <SelectItem key={`${month.year}-${month.monthIndex}`} value={`${month.year}-${month.monthIndex}`}>
               {month.label}
             </SelectItem>
           ))}

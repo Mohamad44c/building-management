@@ -1,187 +1,73 @@
 'use client'
 
-import { useGeneratorDashboardStats } from '@/hooks/use-generator-dashboard-stats'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Fuel, Gauge, ReceiptText, Timer, CalendarDays, HandCoins } from 'lucide-react'
+import { Fuel, Gauge, ReceiptText, Timer } from 'lucide-react'
 
-type Props = {
-  startDate: string
-  endDate: string
-}
+import { Delta, StatCard } from '@/components/dashboard/stat-card'
+import type { GeneratorDashboardStats } from '@/lib/generatorStats'
+import { formatCurrency, formatHours, formatLiters } from '@/lib/format'
 
-const formatCurrency = (value: number) =>
-  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value)
-
-const formatHours = (value: number) => `${value.toFixed(1)} h`
-
-const renderComparison = (current: number, previous: number, formatter: (value: number) => string) => {
-  if (previous <= 0) {
-    return <p className="text-sm text-muted-foreground">No previous period data</p>
-  }
-
-  const delta = current - previous
-  const percent = (delta / previous) * 100
-  const trendClass = delta > 0 ? 'text-destructive' : delta < 0 ? 'text-primary' : 'text-muted-foreground'
+export function GeneratorStatCards({ data, loading }: { data?: GeneratorDashboardStats; loading: boolean }) {
+  const current = data?.current
+  const previous = data?.previous
 
   return (
-    <p className={`text-sm ${trendClass}`}>
-      {delta >= 0 ? '+' : '-'}
-      {formatter(Math.abs(delta))} ({delta >= 0 ? '+' : '-'}
-      {Math.abs(percent).toFixed(1)}%) vs previous period
-    </p>
-  )
-}
-
-export function GeneratorStatCards({ startDate, endDate }: Props) {
-  const { data, isLoading, isError } = useGeneratorDashboardStats(startDate, endDate)
-
-  if (isLoading) {
-    return (
-      <div className="grid gap-3 sm:gap-4 md:grid-cols-2 xl:grid-cols-6">
-        {Array.from({ length: 6 }).map((_, index) => (
-          <Card key={index}>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base font-medium">Loading...</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-base text-muted-foreground">Preparing stats</p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    )
-  }
-
-  if (isError || !data) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base font-medium">Generator stats unavailable</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-base text-muted-foreground">
-            We could not load generator stats for this period. Try another range.
-          </p>
-        </CardContent>
-      </Card>
-    )
-  }
-
-  const { current, previous } = data
-
-  return (
-    <div className="grid gap-3 sm:gap-4 md:grid-cols-2 xl:grid-cols-6">
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle className="text-base font-medium">Diesel spent</CardTitle>
-          <Fuel className="size-4" />
-        </CardHeader>
-        <CardContent className="space-y-1">
-          <p className="text-2xl font-bold">{formatCurrency(current.dieselSpent)}</p>
-          <p className="text-sm text-muted-foreground">Billed diesel in period (paid + unpaid)</p>
-          {renderComparison(current.dieselSpent, previous.dieselSpent, formatCurrency)}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle className="text-base font-medium">Diesel received</CardTitle>
-          <Gauge className="size-4" />
-        </CardHeader>
-        <CardContent className="space-y-1">
-          <p className="text-2xl font-bold">{current.dieselLiters.toFixed(1)} L</p>
-          <p className="text-sm text-muted-foreground">{current.dieselTons.toFixed(3)} tons</p>
-          {renderComparison(
-            current.dieselLiters,
-            previous.dieselLiters,
-            (value) => `${value.toFixed(1)} L`,
-          )}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle className="text-base font-medium">Generator runtime</CardTitle>
-          <Timer className="size-4" />
-        </CardHeader>
-        <CardContent className="space-y-1">
-          <p className="text-2xl font-bold">{formatHours(current.generatorHours)}</p>
-          <p className="text-sm text-muted-foreground">{current.activeDays} active day(s)</p>
-          {renderComparison(current.generatorHours, previous.generatorHours, formatHours)}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle className="text-base font-medium">Total generator expenses</CardTitle>
-          <ReceiptText className="size-4" />
-        </CardHeader>
-        <CardContent className="space-y-1">
-          <p className="text-2xl font-bold">{formatCurrency(current.totalGeneratorExpenses)}</p>
-          <p className="text-sm text-muted-foreground">
-            Diesel + maintenance ({formatCurrency(current.maintenanceCost)} maintenance)
-          </p>
-          {renderComparison(
-            current.totalGeneratorExpenses,
-            previous.totalGeneratorExpenses,
-            formatCurrency,
-          )}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader className="flex flex-row items-start justify-between pb-2">
-          <div className="space-y-1">
-            <CardTitle className="text-base font-medium">Cost efficiency</CardTitle>
-            <CardDescription className="font-mono text-xs">
-              totalGeneratorExpenses = dieselSpent + maintenanceCost
-            </CardDescription>
-          </div>
-          <CalendarDays className="mt-0.5 size-4" />
-        </CardHeader>
-        <CardContent className="space-y-1">
-          <p className="text-base font-semibold">
-            Per day:{' '}
-            {current.costPerDay !== null
-              ? formatCurrency(current.costPerDay)
-              : 'Not enough day data'}
-          </p>
-          <p className="text-base font-semibold">
-            Per hour:{' '}
-            {current.costPerHour !== null
-              ? formatCurrency(current.costPerHour)
-              : 'Not enough hour data'}
-          </p>
-          <p className="text-sm text-muted-foreground">
-            Derived from total expense and runtime in selected period.
-          </p>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle className="text-base font-medium">Estimated monthly collection</CardTitle>
-          <HandCoins className="size-4" />
-        </CardHeader>
-        <CardContent className="space-y-1">
-          <p className="text-2xl font-bold">
-            {data.estimatedMonthlyCollection.amount !== null
-              ? formatCurrency(data.estimatedMonthlyCollection.amount)
-              : 'Not enough data'}
-          </p>
-          <p className="text-sm text-muted-foreground">
-            {data.estimatedMonthlyCollection.amount !== null
-              ? `You need to collect ${formatCurrency(data.estimatedMonthlyCollection.amount)} / month to cover all costs.`
-              : 'Add completed month records to estimate the monthly required collection.'}
-          </p>
-          {data.estimatedMonthlyCollection.amount !== null ? (
-            <p className="text-xs text-muted-foreground">
-              Estimated from the previous {data.estimatedMonthlyCollection.monthsUsed} completed month
-              {data.estimatedMonthlyCollection.monthsUsed > 1 ? 's' : ''}.
-            </p>
-          ) : null}
-        </CardContent>
-      </Card>
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <StatCard
+        label="Generator cost"
+        icon={ReceiptText}
+        loading={loading}
+        value={current && formatCurrency(current.totalGeneratorExpenses)}
+        hint={
+          current &&
+          `Diesel ${formatCurrency(current.dieselSpent)} + maintenance ${formatCurrency(current.maintenanceCost)}`
+        }
+        footer={
+          current &&
+          previous && (
+            <Delta current={current.totalGeneratorExpenses} previous={previous.totalGeneratorExpenses} format={formatCurrency} goodWhen="down" />
+          )
+        }
+      />
+      <StatCard
+        label="Diesel invoiced"
+        icon={Fuel}
+        loading={loading}
+        value={current && formatCurrency(current.dieselSpent)}
+        hint={current && `${formatLiters(current.dieselLiters)} delivered (paid + unpaid)`}
+        footer={
+          current &&
+          previous && <Delta current={current.dieselSpent} previous={previous.dieselSpent} format={formatCurrency} goodWhen="down" />
+        }
+      />
+      <StatCard
+        label="Generator runtime"
+        icon={Timer}
+        loading={loading}
+        value={current && formatHours(current.generatorHours)}
+        hint={current && `Ran on ${current.activeDays} day${current.activeDays === 1 ? '' : 's'}`}
+        footer={
+          current &&
+          previous && <Delta current={current.generatorHours} previous={previous.generatorHours} format={formatHours} goodWhen="neutral" />
+        }
+      />
+      <StatCard
+        label="Cost per run-hour"
+        icon={Gauge}
+        loading={loading}
+        value={current && (current.costPerHour !== null ? formatCurrency(current.costPerHour) : '—')}
+        hint={
+          current &&
+          (current.costPerActiveDay !== null
+            ? `${formatCurrency(current.costPerActiveDay)} per running day`
+            : 'No runtime recorded in this period')
+        }
+        footer={
+          current?.costPerHour != null &&
+          previous?.costPerHour != null && (
+            <Delta current={current.costPerHour} previous={previous.costPerHour} format={formatCurrency} goodWhen="down" />
+          )
+        }
+      />
     </div>
   )
 }

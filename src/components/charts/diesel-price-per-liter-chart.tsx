@@ -1,132 +1,86 @@
 'use client'
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { useDieselExpensesInRange } from '@/hooks/use-expenses'
-import { useMemo } from 'react'
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from 'recharts'
-import { DieselExpense } from '@/payload-types'
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
+import { Fuel } from 'lucide-react'
+
+import { Panel, type PanelStatus } from '@/components/dashboard/panel'
+import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart'
+import { formatDay, formatPricePerLiter } from '@/lib/format'
 
 const chartConfig = {
-  pricePerLiter: {
-    label: 'Price per liter',
-    theme: {
-      light: 'var(--color-chart-3)',
-      dark: 'var(--color-chart-3)',
-    },
-  },
-}
+  pricePerLiter: { label: 'Price per liter', theme: { light: '#eb6834', dark: '#d95926' } },
+} satisfies ChartConfig
 
 type Props = {
-  startDate: string
-  endDate: string
+  data?: Array<{ date: string; pricePerLiter: number }>
+  status: PanelStatus
+  onRetry?: () => void
+  className?: string
 }
 
-const getPricePerLiterUsd = (expense: DieselExpense): number => {
-  const fromField = Number(expense.pricePerLiter)
-  if (Number.isFinite(fromField) && fromField > 0) {
-    return Math.round(fromField * 10000) / 10000
-  }
-  const perThousand = Number(expense.pricePerThousandLiters)
-  if (Number.isFinite(perThousand) && perThousand > 0) {
-    return Math.round((perThousand / 1000) * 10000) / 10000
-  }
-  return 0
-}
-
-export function DieselPricePerLiterChart({ startDate, endDate }: Props) {
-  const { data: expenses, isLoading } = useDieselExpensesInRange(startDate, endDate)
-
-  const chartData = useMemo(() => {
-    if (!expenses?.length) {
-      return []
-    }
-    return [...expenses]
-      .map((expense) => {
-        const d = new Date(expense.date)
-        return {
-          sortKey: d.getTime(),
-          dateLabel: d.toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-          }),
-          pricePerLiter: getPricePerLiterUsd(expense),
-        }
-      })
-      .filter((row) => row.pricePerLiter > 0)
-      .sort((a, b) => a.sortKey - b.sortKey)
-      .map(({ dateLabel, pricePerLiter }) => ({ dateLabel, pricePerLiter }))
-  }, [expenses])
+export function DieselPricePerLiterChart({ data = [], status, onRetry, className }: Props) {
+  const withLabels = data.map((row, index) => ({ ...row, key: `${index}` }))
 
   return (
-    <Card className="md:col-span-2 lg:col-span-4">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-medium sm:text-base">
-          Diesel price per liter over time
-        </CardTitle>
-        <CardDescription className="text-xs sm:text-sm">
-          Effective unit price from each delivery (from stored price per liter or price per 1000 L).
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        {isLoading ? (
-          <div className="flex h-[250px] items-center justify-center sm:h-[300px] lg:h-[320px]">
-            Loading...
-          </div>
-        ) : chartData.length === 0 ? (
-          <div className="flex h-[250px] items-center justify-center text-sm text-muted-foreground sm:h-[300px] lg:h-[320px]">
-            No diesel purchases in this period.
-          </div>
-        ) : (
-          <ChartContainer
-            config={chartConfig}
-            className="h-[250px] w-full sm:h-[300px] lg:h-[320px]"
-          >
-            <LineChart data={chartData} margin={{ left: 4, right: 8, top: 8, bottom: 4 }}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} />
-              <XAxis
-                dataKey="dateLabel"
-                tickLine={false}
-                axisLine={false}
-                fontSize={11}
-                interval="preserveStartEnd"
-                angle={chartData.length > 8 ? -35 : 0}
-                textAnchor={chartData.length > 8 ? 'end' : 'middle'}
-                height={chartData.length > 8 ? 56 : 32}
+    <Panel
+      title="Diesel price per liter"
+      description="Unit price of each delivery in the period."
+      icon={Fuel}
+      status={status}
+      onRetry={onRetry}
+      emptyMessage="No priced diesel deliveries in this period."
+      bodyClassName="h-[240px] sm:h-[280px]"
+      className={className}
+    >
+      <ChartContainer config={chartConfig} className="aspect-auto size-full">
+        <LineChart data={withLabels} margin={{ left: 0, right: 12, top: 8, bottom: 0 }}>
+          <CartesianGrid vertical={false} />
+          {/* Deliveries can share a day, so the axis is keyed by index and labeled by date. */}
+          <XAxis
+            dataKey="key"
+            tickLine={false}
+            axisLine={false}
+            tickMargin={8}
+            minTickGap={16}
+            fontSize={12}
+            tickFormatter={(key) => formatDay(withLabels[Number(key)]?.date ?? '')}
+          />
+          <YAxis
+            tickLine={false}
+            axisLine={false}
+            fontSize={12}
+            width={52}
+            // Pad around the data but never below $0 (a lone point would otherwise get a -$1 axis).
+            domain={[
+              (min: number) => Math.max(0, Math.floor(min * 0.95 * 20) / 20),
+              (max: number) => Math.ceil(max * 1.05 * 20) / 20,
+            ]}
+            tickFormatter={(v) => `$${Number(v).toFixed(2)}`}
+          />
+          <ChartTooltip
+            content={
+              <ChartTooltipContent
+                indicator="line"
+                labelFormatter={(_, payload) => formatDay(payload?.[0]?.payload?.date, { month: 'short', day: 'numeric', year: 'numeric' })}
+                formatter={(value) => (
+                  <div className="flex w-full items-center justify-between gap-4">
+                    <span className="text-muted-foreground">Price</span>
+                    <span className="font-mono font-medium tabular-nums">{formatPricePerLiter(Number(value))}</span>
+                  </div>
+                )}
               />
-              <YAxis
-                tickLine={false}
-                axisLine={false}
-                fontSize={12}
-                tickFormatter={(v) => `$${Number(v).toFixed(2)}`}
-                domain={['auto', 'auto']}
-                width={56}
-              />
-              <ChartTooltip
-                content={
-                  <ChartTooltipContent
-                    formatter={(value) => [
-                      `$${Number(value).toFixed(4)} / L`,
-                      'Price per liter',
-                    ]}
-                    labelFormatter={(label) => `Date: ${label}`}
-                  />
-                }
-              />
-              <Line
-                type="monotone"
-                dataKey="pricePerLiter"
-                stroke="var(--color-pricePerLiter)"
-                strokeWidth={2}
-                dot={{ r: 3, fill: 'var(--color-pricePerLiter)' }}
-                activeDot={{ r: 5 }}
-                connectNulls
-              />
-            </LineChart>
-          </ChartContainer>
-        )}
-      </CardContent>
-    </Card>
+            }
+          />
+          <Line
+            type="linear"
+            dataKey="pricePerLiter"
+            stroke="var(--color-pricePerLiter)"
+            strokeWidth={2}
+            dot={{ r: 4, fill: 'var(--color-pricePerLiter)', stroke: 'var(--card)', strokeWidth: 2 }}
+            activeDot={{ r: 6, stroke: 'var(--card)', strokeWidth: 2 }}
+          />
+        </LineChart>
+      </ChartContainer>
+    </Panel>
   )
 }

@@ -1,55 +1,26 @@
-'use client'
-
-import type { LucideIcon } from 'lucide-react'
-import { useId } from 'react'
-
-import { cn } from '@/lib/utils'
+import { useId, type ReactNode } from 'react'
 
 export type DashboardSectionProps = {
   title: string
   description?: string
-  icon: LucideIcon
-  iconClassName?: string
-  children: React.ReactNode
+  /** Shown next to the title, e.g. whether the section follows the period filter. */
+  meta?: ReactNode
+  children: ReactNode
 }
 
-export function DashboardSection({
-  title,
-  description,
-  icon: Icon,
-  iconClassName,
-  children,
-}: DashboardSectionProps) {
+export function DashboardSection({ title, description, meta, children }: DashboardSectionProps) {
   const headingId = useId()
 
   return (
-    <section
-      className="space-y-4 sm:space-y-5"
-      aria-labelledby={headingId}
-    >
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
-        <div
-          className={cn(
-            'flex size-11 shrink-0 items-center justify-center rounded-xl border border-border/60 bg-card shadow-sm sm:size-12',
-            iconClassName,
-          )}
-          aria-hidden
-        >
-          <Icon className="size-5 sm:size-6" strokeWidth={1.75} />
-        </div>
-        <div className="min-w-0 space-y-1">
-          <h2
-            id={headingId}
-            className="text-lg font-semibold tracking-tight text-foreground sm:text-xl"
-          >
+    <section className="scroll-mt-40 space-y-3 sm:space-y-4" aria-labelledby={headingId}>
+      <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-1">
+        <div className="space-y-0.5">
+          <h2 id={headingId} className="text-lg font-semibold tracking-tight">
             {title}
           </h2>
-          {description ? (
-            <p className="max-w-3xl text-sm text-muted-foreground sm:text-base">
-              {description}
-            </p>
-          ) : null}
+          {description ? <p className="text-sm text-muted-foreground">{description}</p> : null}
         </div>
+        {meta ? <div className="text-xs text-muted-foreground">{meta}</div> : null}
       </div>
       {children}
     </section>

@@ -1,64 +1,53 @@
 'use client'
 
-import { useGeneratorMaintenanceForecast } from '@/hooks/use-expenses'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Skeleton } from '@/components/ui/skeleton'
 import { Wrench } from 'lucide-react'
 
-const formatDate = (value: string) =>
-  new Date(value).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+import { StatCard } from '@/components/dashboard/stat-card'
+import { Progress } from '@/components/ui/progress'
+import { SERVICE_INTERVAL_HOURS, type GeneratorMaintenanceForecast } from '@/lib/dashboardMetrics'
+import { formatDay, formatHours, formatInteger } from '@/lib/format'
+import { cn } from '@/lib/utils'
 
-export function GeneratorMaintenanceForecastCard() {
-  const { data, isLoading, isError } = useGeneratorMaintenanceForecast()
-
-  if (isLoading) {
+export function GeneratorMaintenanceForecastCard({ data, loading }: { data?: GeneratorMaintenanceForecast; loading: boolean }) {
+  if (!loading && data?.status !== 'ok') {
     return (
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle className="text-base font-medium">Next service estimate</CardTitle>
-          <Wrench className="size-4" />
-        </CardHeader>
-        <CardContent>
-          <Skeleton className="h-9 w-32" />
-        </CardContent>
-      </Card>
+      <StatCard
+        label="Next oil change"
+        icon={Wrench}
+        value="—"
+        hint={data?.status === 'unavailable' ? data.reason : 'Unavailable.'}
+      />
     )
   }
 
-  if (isError || !data || data.hoursRemaining === null) {
-    return (
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle className="text-base font-medium">Next service estimate</CardTitle>
-          <Wrench className="size-4" />
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">
-            Not enough generator hours / oil-change records yet to estimate the next service.
-          </p>
-        </CardContent>
-      </Card>
-    )
-  }
+  const overdue = data?.status === 'ok' && data.hoursRemaining <= 0
+  const usedPct = data?.status === 'ok' ? Math.min(100, (data.hoursSinceService / SERVICE_INTERVAL_HOURS) * 100) : 0
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-base font-medium">Next service estimate</CardTitle>
-        <Wrench className="size-4" />
-      </CardHeader>
-      <CardContent className="space-y-1">
-        <p className="text-2xl font-bold">{data.hoursRemaining.toFixed(0)} h remaining</p>
-        <p className="text-sm text-muted-foreground">
-          {data.estimatedDueDate
-            ? `Estimated due around ${formatDate(data.estimatedDueDate)}`
-            : 'Not enough recent runtime data to estimate a due date'}
-        </p>
-        <CardDescription>
-          Rough estimate based on a 250h service interval assumption — no service-interval field
-          exists yet. {data.avgHoursPerDay ? `Avg. ${data.avgHoursPerDay.toFixed(1)} h/day recently.` : ''}
-        </CardDescription>
-      </CardContent>
-    </Card>
+    <StatCard
+      label="Next oil change"
+      icon={Wrench}
+      loading={loading}
+      value={
+        data?.status === 'ok' && (
+          <span className={cn(overdue && 'text-red-600 dark:text-red-400')}>
+            {overdue ? `Overdue ${formatHours(-data.hoursRemaining)}` : `${formatHours(data.hoursRemaining)} left`}
+          </span>
+        )
+      }
+      hint={
+        data?.status === 'ok' &&
+        `${formatInteger(data.hoursSinceService)} of ${SERVICE_INTERVAL_HOURS} h since the change on ${formatDay(data.lastServiceDate)}${
+          data.estimatedDueDate ? ` · due around ${formatDay(data.estimatedDueDate)}` : ''
+        }${data.avgHoursPerDay !== null ? ` · ~${data.avgHoursPerDay.toFixed(1)} h/day lately` : ''}.`
+      }
+      footer={
+        <Progress
+          value={usedPct}
+          aria-label={`${usedPct.toFixed(0)}% of service interval used`}
+          className={cn('mt-1 h-1.5', overdue && 'bg-red-500/20 [&>[data-slot=progress-indicator]]:bg-red-500')}
+        />
+      }
+    />
   )
 }

@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata = {
-  description: 'A building management system',
-  title: 'Building management system',
+  description: 'Rent, generator, diesel and expense overview for your buildings',
+  title: 'Building dashboard',
 }
 
 export default function RootLayout(props: { children: React.ReactNode }) {
@@ -23,11 +23,9 @@ export default function RootLayout(props: { children: React.ReactNode }) {
 
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${montserrat.variable} ${geistMono.variable}`}>
+      <body className={`${montserrat.variable} ${geistMono.variable} min-h-dvh bg-background font-sans antialiased`}>
         <Providers>
-          <main className="min-h-dvh bg-gradient-to-b from-secondary/40 via-background to-background antialiased">
-            {children}
-          </main>
+          <main className="min-h-dvh">{children}</main>
         </Providers>
       </body>
     </html>

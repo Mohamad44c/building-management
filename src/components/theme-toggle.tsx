@@ -1,40 +1,23 @@
 'use client'
 
 import { Moon, Sun } from 'lucide-react'
-import { useTheme } from '@/hooks/use-theme'
+import { useTheme } from 'next-themes'
+
 import { Button } from '@/components/ui/button'
 
 export const ThemeToggle = () => {
-  const { theme, toggleTheme, mounted } = useTheme()
+  const { resolvedTheme, setTheme } = useTheme()
 
-  // Prevent hydration mismatch by not rendering until mounted
-  if (!mounted) {
-    return (
-      <Button variant="outline" size="icon" disabled>
-        <Sun className="h-[1.2rem] w-[1.2rem]" />
-        <span className="sr-only">Toggle theme</span>
-      </Button>
-    )
-  }
-
+  // Both icons render and CSS picks one, so there's no hydration mismatch or placeholder state.
   return (
     <Button
       variant="outline"
       size="icon"
-      onClick={toggleTheme}
-      aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+      onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+      aria-label="Toggle light/dark mode"
     >
-      {theme === 'light' ? (
-        <>
-          <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all" />
-          <span className="sr-only">Switch to dark mode</span>
-        </>
-      ) : (
-        <>
-          <Moon className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all" />
-          <span className="sr-only">Switch to light mode</span>
-        </>
-      )}
+      <Sun className="size-[1.1rem] dark:hidden" />
+      <Moon className="hidden size-[1.1rem] dark:block" />
     </Button>
   )
 }

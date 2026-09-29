@@ -1,259 +1,106 @@
-import type { Payload } from 'payload'
+import { BUSINESS_TIME_ZONE, dayKey } from '@/lib/businessTime'
 
-export type RangeWindow = {
-  start: Date
-  end: Date
-  previousStart: Date
-  previousEnd: Date
-}
+export type DatedDoc = { date: string }
+export type DieselStatDoc = DatedDoc & { totalAmount?: number | null; liters?: number | null }
+export type MaintenanceStatDoc = DatedDoc & { amount?: number | null }
+export type HoursStatDoc = DatedDoc & { hoursRun?: number | null }
 
 export type GeneratorStatsSnapshot = {
   dieselSpent: number
   dieselLiters: number
-  dieselTons: number
   generatorHours: number
   maintenanceCost: number
   totalGeneratorExpenses: number
-  costPerDay: number | null
+  /** Total generator cost divided by days the generator actually ran. */
+  costPerActiveDay: number | null
   costPerHour: number | null
   activeDays: number
 }
 
 export type DailyHoursPoint = {
   date: string
-  label: string
   hoursRun: number
 }
 
 export type GeneratorDashboardStats = {
-  period: {
-    start: string
-    end: string
-    previousStart: string
-    previousEnd: string
-  }
   current: GeneratorStatsSnapshot
   previous: GeneratorStatsSnapshot
   timeline: DailyHoursPoint[]
-  estimatedMonthlyCollection: {
-    amount: number | null
-    monthsUsed: number
-  }
-}
-
-const startOfMonth = (date: Date): Date =>
-  new Date(date.getFullYear(), date.getMonth(), 1, 0, 0, 0, 0)
-
-const buildRangeWindow = (start: Date, end: Date): RangeWindow => {
-  if (start > end) {
-    throw new Error('Invalid period: start date is after end date.')
-  }
-
-  const rangeLengthMs = end.getTime() - start.getTime()
-  const previousStart = new Date(start.getTime() - rangeLengthMs - 1)
-  const previousEnd = new Date(end.getTime() - rangeLengthMs - 1)
-
-  return {
-    start,
-    end,
-    previousStart,
-    previousEnd,
-  }
 }
 
 const toNumber = (value: unknown): number => Number(value) || 0
 
-const formatDayKey = (value: string | Date): string => {
-  const date = new Date(value)
-  const year = date.getFullYear()
-  const month = `${date.getMonth() + 1}`.padStart(2, '0')
-  const day = `${date.getDate()}`.padStart(2, '0')
-  return `${year}-${month}-${day}`
-}
-
-const getLabelFromDayKey = (dayKey: string): string => {
-  const [year, month, day] = dayKey.split('-').map(Number)
-  return new Date(year, month - 1, day).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
+export const inWindow = <T extends DatedDoc>(docs: T[], start: Date, end: Date): T[] => {
+  const from = start.getTime()
+  const to = end.getTime()
+  return docs.filter((doc) => {
+    const t = new Date(doc.date).getTime()
+    return t >= from && t <= to
   })
 }
 
-const getActiveDays = (dayMap: Record<string, number>): number =>
-  Object.values(dayMap).filter((hours) => hours > 0).length
+const hoursByDay = (hourDocs: HoursStatDoc[], timeZone: string): Map<string, number> => {
+  const byDay = new Map<string, number>()
+  for (const doc of hourDocs) {
+    const key = dayKey(doc.date, timeZone)
+    byDay.set(key, (byDay.get(key) ?? 0) + toNumber(doc.hoursRun))
+  }
+  return byDay
+}
 
-const aggregateStats = ({
-  dieselDocs,
-  maintenanceDocs,
-  hourDocs,
-}: {
-  dieselDocs: any[]
-  maintenanceDocs: any[]
-  hourDocs: any[]
-}): GeneratorStatsSnapshot => {
-  // Invoiced diesel in the window (not cash-paid only). Open payables are shown separately on the dashboard.
-  const dieselSpent = dieselDocs.reduce((sum, doc) => sum + toNumber(doc.totalAmount), 0)
-  const dieselLiters = dieselDocs.reduce((sum, doc) => sum + toNumber(doc.liters), 0)
-  const maintenanceCost = maintenanceDocs.reduce((sum, doc) => sum + toNumber(doc.amount), 0)
-  const generatorHours = hourDocs.reduce((sum, doc) => sum + toNumber(doc.hoursRun), 0)
+export function aggregateGeneratorStats(
+  docs: { dieselDocs: DieselStatDoc[]; maintenanceDocs: MaintenanceStatDoc[]; hourDocs: HoursStatDoc[] },
+  timeZone: string = BUSINESS_TIME_ZONE,
+): GeneratorStatsSnapshot {
+  // Invoiced diesel in the window (paid or not). Open payables are shown separately.
+  const dieselSpent = docs.dieselDocs.reduce((sum, doc) => sum + toNumber(doc.totalAmount), 0)
+  const dieselLiters = docs.dieselDocs.reduce((sum, doc) => sum + toNumber(doc.liters), 0)
+  const maintenanceCost = docs.maintenanceDocs.reduce((sum, doc) => sum + toNumber(doc.amount), 0)
+  const generatorHours = docs.hourDocs.reduce((sum, doc) => sum + toNumber(doc.hoursRun), 0)
   const totalGeneratorExpenses = dieselSpent + maintenanceCost
-
-  const activeDayMap = hourDocs.reduce<Record<string, number>>((acc, doc) => {
-    const dayKey = formatDayKey(doc.date)
-    acc[dayKey] = (acc[dayKey] || 0) + toNumber(doc.hoursRun)
-    return acc
-  }, {})
-
-  const activeDays = getActiveDays(activeDayMap)
+  const activeDays = [...hoursByDay(docs.hourDocs, timeZone).values()].filter((h) => h > 0).length
 
   return {
     dieselSpent,
     dieselLiters,
-    dieselTons: dieselLiters / 1000,
     generatorHours,
     maintenanceCost,
     totalGeneratorExpenses,
-    costPerDay: activeDays > 0 ? totalGeneratorExpenses / activeDays : null,
+    costPerActiveDay: activeDays > 0 ? totalGeneratorExpenses / activeDays : null,
     costPerHour: generatorHours > 0 ? totalGeneratorExpenses / generatorHours : null,
     activeDays,
   }
 }
 
-const buildTimeline = (hourDocs: any[]): DailyHoursPoint[] => {
-  const hoursByDay = hourDocs.reduce<Record<string, number>>((acc, doc) => {
-    const dayKey = formatDayKey(doc.date)
-    acc[dayKey] = (acc[dayKey] || 0) + toNumber(doc.hoursRun)
-    return acc
-  }, {})
-
-  return Object.keys(hoursByDay)
-    .sort((a, b) => new Date(a).getTime() - new Date(b).getTime())
-    .map((dayKey) => ({
-      date: dayKey,
-      label: getLabelFromDayKey(dayKey),
-      hoursRun: hoursByDay[dayKey],
-    }))
+/** Hours run per business-calendar day, for days that have a reading. */
+export function buildHoursTimeline(
+  hourDocs: HoursStatDoc[],
+  timeZone: string = BUSINESS_TIME_ZONE,
+): DailyHoursPoint[] {
+  return [...hoursByDay(hourDocs, timeZone).entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([date, hoursRun]) => ({ date, hoursRun }))
 }
 
-const monthKeyFromDate = (value: string | Date): string => {
-  const date = new Date(value)
-  const year = date.getFullYear()
-  const month = `${date.getMonth() + 1}`.padStart(2, '0')
-  return `${year}-${month}`
-}
-
-const computeEstimatedMonthlyCollection = ({
-  dieselDocs,
-  maintenanceDocs,
-  currentWindowStart,
-}: {
-  dieselDocs: any[]
-  maintenanceDocs: any[]
-  currentWindowStart: Date
-}): { amount: number | null; monthsUsed: number } => {
-  const currentMonthKey = monthKeyFromDate(currentWindowStart)
-  const monthlyTotals = new Map<string, number>()
-
-  for (const doc of dieselDocs) {
-    const key = monthKeyFromDate(doc.date)
-    monthlyTotals.set(key, (monthlyTotals.get(key) ?? 0) + toNumber(doc.totalAmount))
-  }
-
-  for (const doc of maintenanceDocs) {
-    const key = monthKeyFromDate(doc.date)
-    monthlyTotals.set(key, (monthlyTotals.get(key) ?? 0) + toNumber(doc.amount))
-  }
-
-  const previousMonthKeys = Array.from(monthlyTotals.keys())
-    .filter((key) => key < currentMonthKey)
-    .sort((a, b) => b.localeCompare(a))
-    .slice(0, 3)
-
-  if (previousMonthKeys.length === 0) {
-    return {
-      amount: null,
-      monthsUsed: 0,
-    }
-  }
-
-  const total = previousMonthKeys.reduce((sum, key) => sum + (monthlyTotals.get(key) ?? 0), 0)
-
-  return {
-    amount: total / previousMonthKeys.length,
-    monthsUsed: previousMonthKeys.length,
-  }
-}
-
-const readPeriodDocs = async (payload: Payload, start: Date, end: Date) => {
-  const [diesel, maintenance, hours] = await Promise.all([
-    payload.find({
-      collection: 'diesel-expenses',
-      where: {
-        date: {
-          greater_than_equal: start.toISOString(),
-          less_than_equal: end.toISOString(),
-        },
-      },
-      sort: 'date',
-      limit: 0,
-    }),
-    payload.find({
-      collection: 'generator-expenses',
-      where: {
-        date: {
-          greater_than_equal: start.toISOString(),
-          less_than_equal: end.toISOString(),
-        },
-      },
-      sort: 'date',
-      limit: 0,
-    }),
-    payload.find({
-      collection: 'generator-hours',
-      where: {
-        date: {
-          greater_than_equal: start.toISOString(),
-          less_than_equal: end.toISOString(),
-        },
-      },
-      sort: 'date',
-      limit: 0,
-    }),
-  ])
-
-  return {
-    dieselDocs: diesel.docs,
-    maintenanceDocs: maintenance.docs,
-    hourDocs: hours.docs,
-  }
-}
-
-export const getGeneratorDashboardStats = async (
-  payload: Payload,
-  start: Date,
-  end: Date,
-): Promise<GeneratorDashboardStats> => {
-  const window = buildRangeWindow(start, end)
-  const currentDocs = await readPeriodDocs(payload, window.start, window.end)
-  const previousDocs = await readPeriodDocs(payload, window.previousStart, window.previousEnd)
-  const completedMonthsRangeStart = startOfMonth(new Date(window.start.getFullYear() - 2, 0, 1))
-  const historicalDocs = await readPeriodDocs(payload, completedMonthsRangeStart, window.end)
-  const estimatedMonthlyCollection = computeEstimatedMonthlyCollection({
-    dieselDocs: historicalDocs.dieselDocs,
-    maintenanceDocs: historicalDocs.maintenanceDocs,
-    currentWindowStart: window.start,
+/**
+ * Current vs comparison-window generator stats. `docs` must cover both windows
+ * (i.e. `[previousStart, end]`); they're sliced here so the caller reads each collection once.
+ */
+export function computeGeneratorDashboardStats(
+  docs: { dieselDocs: DieselStatDoc[]; maintenanceDocs: MaintenanceStatDoc[]; hourDocs: HoursStatDoc[] },
+  window: { start: Date; end: Date; previousStart: Date; previousEnd: Date },
+  timeZone: string = BUSINESS_TIME_ZONE,
+): GeneratorDashboardStats {
+  const slice = (start: Date, end: Date) => ({
+    dieselDocs: inWindow(docs.dieselDocs, start, end),
+    maintenanceDocs: inWindow(docs.maintenanceDocs, start, end),
+    hourDocs: inWindow(docs.hourDocs, start, end),
   })
+  const current = slice(window.start, window.end)
 
   return {
-    period: {
-      start: window.start.toISOString(),
-      end: window.end.toISOString(),
-      previousStart: window.previousStart.toISOString(),
-      previousEnd: window.previousEnd.toISOString(),
-    },
-    current: aggregateStats(currentDocs),
-    previous: aggregateStats(previousDocs),
-    timeline: buildTimeline(currentDocs.hourDocs),
-    estimatedMonthlyCollection,
+    current: aggregateGeneratorStats(current, timeZone),
+    previous: aggregateGeneratorStats(slice(window.previousStart, window.previousEnd), timeZone),
+    timeline: buildHoursTimeline(current.hourDocs, timeZone),
   }
 }

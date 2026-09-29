@@ -1,149 +1,73 @@
 'use client'
 
-import { useTenants } from '@/hooks/use-tenants'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Skeleton } from '@/components/ui/skeleton'
-import { Building } from 'lucide-react'
+import { Users } from 'lucide-react'
 
-export function TenantsByBuildingChart() {
-  const { data, isLoading, error } = useTenants()
+import { Panel, SnapshotBadge, type PanelStatus } from '@/components/dashboard/panel'
+import type { TenantsByBuilding } from '@/lib/dashboardMetrics'
+import { formatCurrency, formatInteger } from '@/lib/format'
 
-  if (isLoading) {
-    return (
-      <Card className="md:col-span-2 lg:col-span-5">
-        <CardHeader>
-          <CardTitle className="text-base font-semibold sm:text-lg">
-            Tenant Data by Building
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-3/4" />
-          <Skeleton className="h-4 w-1/2" />
-        </CardContent>
-      </Card>
-    )
-  }
+type Props = { data?: TenantsByBuilding; status: PanelStatus; onRetry?: () => void; className?: string }
 
-  if (error) {
-    return (
-      <Card className="md:col-span-2 lg:col-span-5">
-        <CardHeader>
-          <CardTitle className="text-base font-semibold sm:text-lg">
-            Tenant Data by Building
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-destructive">Error loading tenant data</p>
-        </CardContent>
-      </Card>
-    )
-  }
-
-  if (!data || data.buildings.length === 0) {
-    return (
-      <Card className="md:col-span-2 lg:col-span-5">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-base font-semibold sm:text-lg">
-            Tenant Data by Building
-          </CardTitle>
-          <Building className="size-5 text-chart-2" />
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground sm:text-base">No tenant data available</p>
-        </CardContent>
-      </Card>
-    )
-  }
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount)
-  }
+export function TenantsByBuildingChart({ data, status, onRetry, className }: Props) {
+  const empty = status === 'ready' && (data?.buildings.length ?? 0) === 0
+  const totals = data?.totals
 
   return (
-    <Card className="md:col-span-2 lg:col-span-5">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-base font-semibold sm:text-lg">Tenant Data by Building</CardTitle>
-        <Building className="size-5 text-chart-2" />
-      </CardHeader>
-      <CardContent className="space-y-3 sm:space-y-4">
-        {data.buildings.map((building, index) => (
-          <div
-            key={building.id}
-            className="flex flex-col gap-3 rounded-lg bg-muted/60 p-3.5 sm:flex-row sm:items-center sm:justify-between"
-          >
-            <div className="flex items-center space-x-3">
-              <div className="flex size-9 items-center justify-center rounded-full bg-chart-2/25">
-                <span className="text-base font-bold text-chart-2">{index + 1}</span>
-              </div>
-              <div>
-                <p className="text-base font-semibold text-foreground sm:text-lg">{building.name}</p>
-                <p className="text-sm text-muted-foreground">
-                  {building.tenantCount} tenant{building.tenantCount !== 1 ? 's' : ''}
-                </p>
-              </div>
-            </div>
-            <div className="space-y-1">
-              <div className="flex items-center gap-3 sm:gap-4">
-                <div className="text-center">
-                  <p className="text-sm text-muted-foreground">Total Amps</p>
-                  <p className="text-base font-bold text-chart-2 sm:text-lg">{building.totalAmps}A</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-sm text-muted-foreground">Monthly Fees</p>
-                  <p className="text-base font-bold text-chart-1 sm:text-lg">
-                    {formatCurrency(building.totalMonthlyFees)}
-                  </p>
-                </div>
-                <div className="text-center">
-                  <p className="text-sm text-muted-foreground">Building Fees</p>
-                  <p className="text-base font-bold text-chart-4 sm:text-lg">
-                    {formatCurrency(building.totalBuildingFees)}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
-
-        {/* Grand Totals */}
-        <div className="mt-4 border-t pt-4">
-          <div className="flex flex-col gap-3 rounded-lg border border-chart-2/30 bg-chart-2/15 p-3.5 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="flex size-9 items-center justify-center rounded-full bg-chart-2">
-                <span className="text-base font-bold text-white dark:text-background">Σ</span>
-              </div>
-              <div>
-                <p className="text-base font-bold text-foreground sm:text-lg">Total of All Buildings</p>
-                <p className="text-sm text-muted-foreground">Combined totals</p>
-              </div>
-            </div>
-            <div className="space-y-1">
-              <div className="flex items-center gap-3 sm:gap-4">
-                <div className="text-center">
-                  <p className="text-sm text-muted-foreground">Total Amps</p>
-                  <p className="text-base font-extrabold text-chart-2 sm:text-lg">{data.grandTotalAmps}A</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-sm text-muted-foreground">Monthly Fees</p>
-                  <p className="text-base font-extrabold text-chart-1 sm:text-lg">
-                    {formatCurrency(data.grandTotalMonthlyFees)}
-                  </p>
-                </div>
-                <div className="text-center">
-                  <p className="text-sm text-muted-foreground">Building Fees</p>
-                  <p className="text-base font-extrabold text-chart-4 sm:text-lg">
-                    {formatCurrency(data.grandTotalBuildingFees)}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+    <Panel
+      title="Tenants by building"
+      description={
+        totals
+          ? `Active tenants' current fees and amps.${totals.inactiveCount > 0 ? ` ${totals.inactiveCount} inactive tenant${totals.inactiveCount === 1 ? '' : 's'} not counted.` : ''}`
+          : "Active tenants' current fees and amps."
+      }
+      icon={Users}
+      badge={<SnapshotBadge />}
+      status={empty ? 'empty' : status}
+      onRetry={onRetry}
+      emptyMessage="No buildings yet."
+      bodyClassName="min-h-[160px]"
+      className={className}
+    >
+      <div className="-mx-5 overflow-x-auto px-5">
+        <table className="w-full min-w-[520px] text-sm">
+          <thead>
+            <tr className="border-b text-left text-xs text-muted-foreground">
+              <th scope="col" className="py-2 pr-3 font-medium">Building</th>
+              <th scope="col" className="px-3 py-2 text-right font-medium">Tenants</th>
+              <th scope="col" className="px-3 py-2 text-right font-medium">Amps</th>
+              <th scope="col" className="px-3 py-2 text-right font-medium">Monthly fees</th>
+              <th scope="col" className="py-2 pl-3 text-right font-medium">Building fees</th>
+            </tr>
+          </thead>
+          <tbody className="tabular-nums">
+            {data?.buildings.map((b) => (
+              <tr key={b.id} className="border-b border-border/60 last:border-0">
+                <th scope="row" className="py-2.5 pr-3 text-left font-medium">{b.name}</th>
+                <td className="px-3 py-2.5 text-right">
+                  {b.tenantCount}
+                  {b.inactiveCount > 0 ? (
+                    <span className="ml-1 text-xs text-muted-foreground">(+{b.inactiveCount} inactive)</span>
+                  ) : null}
+                </td>
+                <td className="px-3 py-2.5 text-right">{formatInteger(b.totalAmps)} A</td>
+                <td className="px-3 py-2.5 text-right">{formatCurrency(b.totalMonthlyFees)}</td>
+                <td className="py-2.5 pl-3 text-right">{formatCurrency(b.totalBuildingFees)}</td>
+              </tr>
+            ))}
+          </tbody>
+          {totals ? (
+            <tfoot className="tabular-nums">
+              <tr className="border-t-2 font-semibold">
+                <th scope="row" className="py-2.5 pr-3 text-left">Total</th>
+                <td className="px-3 py-2.5 text-right">{totals.tenantCount}</td>
+                <td className="px-3 py-2.5 text-right">{formatInteger(totals.totalAmps)} A</td>
+                <td className="px-3 py-2.5 text-right">{formatCurrency(totals.totalMonthlyFees)}</td>
+                <td className="py-2.5 pl-3 text-right">{formatCurrency(totals.totalBuildingFees)}</td>
+              </tr>
+            </tfoot>
+          ) : null}
+        </table>
+      </div>
+    </Panel>
   )
 }

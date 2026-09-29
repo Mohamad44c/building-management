@@ -1,105 +1,61 @@
 'use client'
 
-import { useRentCollectionSummary } from '@/hooks/use-invoices'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Skeleton } from '@/components/ui/skeleton'
-import { Receipt, HandCoins, AlertTriangle, Percent } from 'lucide-react'
+import { AlertTriangle, HandCoins, Receipt, Scale } from 'lucide-react'
 
-type Props = {
-  startDate: string
-  endDate: string
-}
+import { StatCard } from '@/components/dashboard/stat-card'
+import { Progress } from '@/components/ui/progress'
+import type { RentCollectionSummary } from '@/lib/dashboardMetrics'
+import { formatCurrency, formatPercent } from '@/lib/format'
 
-const formatCurrency = (value: number) =>
-  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value)
-
-export function RentCollectionSummaryCards({ startDate, endDate }: Props) {
-  const { data, isLoading, isError } = useRentCollectionSummary(startDate, endDate)
-
-  if (isLoading) {
-    return (
-      <div className="grid gap-3 sm:gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {Array.from({ length: 4 }).map((_, index) => (
-          <Card key={index}>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base font-medium">Loading...</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Skeleton className="h-9 w-32" />
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    )
-  }
-
-  if (isError || !data) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base font-medium">Rent collection unavailable</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-base text-muted-foreground">
-            We could not load rent collection data for this period.
-          </p>
-        </CardContent>
-      </Card>
-    )
-  }
-
-  const { totalBilled, totalCollected, outstanding, collectionRatePct, overdueCount, invoiceCount } =
-    data
+export function RentCollectionSummaryCards({ data, loading }: { data?: RentCollectionSummary; loading: boolean }) {
+  const rate = data?.collectionRatePct ?? null
 
   return (
-    <div className="grid gap-3 sm:gap-4 md:grid-cols-2 xl:grid-cols-4">
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle className="text-base font-medium">Billed</CardTitle>
-          <Receipt className="size-4" />
-        </CardHeader>
-        <CardContent className="space-y-1">
-          <p className="text-2xl font-bold">{formatCurrency(totalBilled)}</p>
-          <CardDescription>
-            {invoiceCount} invoice{invoiceCount === 1 ? '' : 's'} for this period
-          </CardDescription>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle className="text-base font-medium">Collected</CardTitle>
-          <HandCoins className="size-4" />
-        </CardHeader>
-        <CardContent className="space-y-1">
-          <p className="text-2xl font-bold">{formatCurrency(totalCollected)}</p>
-          <CardDescription>
-            {collectionRatePct !== null ? `${collectionRatePct.toFixed(1)}% of billed` : 'No invoices billed yet'}
-          </CardDescription>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle className="text-base font-medium">Outstanding</CardTitle>
-          <Percent className="size-4" />
-        </CardHeader>
-        <CardContent className="space-y-1">
-          <p className="text-2xl font-bold">{formatCurrency(outstanding)}</p>
-          <CardDescription>Billed minus collected for this period</CardDescription>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle className="text-base font-medium">Overdue invoices</CardTitle>
-          <AlertTriangle className="size-4" />
-        </CardHeader>
-        <CardContent className="space-y-1">
-          <p className="text-2xl font-bold">{overdueCount}</p>
-          <CardDescription>Past due date and not fully paid</CardDescription>
-        </CardContent>
-      </Card>
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <StatCard
+        label="Billed"
+        icon={Receipt}
+        loading={loading}
+        value={data && formatCurrency(data.totalBilled)}
+        hint={data && `${data.invoiceCount} invoice${data.invoiceCount === 1 ? '' : 's'} for these billing months`}
+      />
+      <StatCard
+        label="Collected"
+        icon={HandCoins}
+        loading={loading}
+        value={data && formatCurrency(data.totalCollected)}
+        hint={data && (rate !== null ? `${formatPercent(rate)} of billed` : 'Nothing billed yet')}
+        footer={
+          rate !== null && (
+            <Progress value={Math.min(100, rate)} className="mt-1 h-1.5" aria-label={`${formatPercent(rate)} collected`} />
+          )
+        }
+      />
+      <StatCard
+        label="Outstanding"
+        icon={Scale}
+        loading={loading}
+        value={data && formatCurrency(data.outstanding)}
+        hint="Billed minus collected on these invoices"
+      />
+      <StatCard
+        label="Overdue"
+        icon={AlertTriangle}
+        loading={loading}
+        value={
+          data && (
+            <span className={data.overdueAmount > 0 ? 'text-red-600 dark:text-red-400' : undefined}>
+              {formatCurrency(data.overdueAmount)}
+            </span>
+          )
+        }
+        hint={
+          data &&
+          (data.overdueCount > 0
+            ? `${data.overdueCount} invoice${data.overdueCount === 1 ? '' : 's'} past due with a balance`
+            : 'No invoices past due')
+        }
+      />
     </div>
   )
 }

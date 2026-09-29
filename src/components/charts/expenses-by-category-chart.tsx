@@ -1,87 +1,58 @@
 'use client'
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { useExpensesByCategory } from '@/hooks/use-expenses'
-import { CartesianGrid, Line, LineChart, XAxis, YAxis } from 'recharts'
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
+import { Wallet } from 'lucide-react'
 
-const chartConfig = {
-  totalAmount: {
-    label: 'Total spent',
-    theme: {
-      light: 'var(--color-chart-2)',
-      dark: 'var(--color-chart-2)',
-    },
-  },
-}
+import { BarList, type BarListItem } from '@/components/dashboard/bar-list'
+import { Panel, type PanelStatus } from '@/components/dashboard/panel'
+import type { ExpensesByCategory } from '@/lib/dashboardMetrics'
+import { formatCurrency } from '@/lib/format'
 
-type Props = {
-  startDate: string
-  endDate: string
-}
+const MAX_ROWS = 7
 
-const formatCurrency = (value: number) =>
-  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value)
+type Props = { data?: ExpensesByCategory; status: PanelStatus; onRetry?: () => void; className?: string }
 
-export function ExpensesByCategoryChart({ startDate, endDate }: Props) {
-  const { data, isLoading } = useExpensesByCategory(startDate, endDate)
+export function ExpensesByCategoryChart({ data, status, onRetry, className }: Props) {
+  const categories = data?.categories ?? []
+  const empty = status === 'ready' && categories.length === 0
+
+  // Long tails fold into "Other" so the list stays scannable.
+  const items: BarListItem[] = categories.slice(0, MAX_ROWS).map((c) => ({
+    id: c.id,
+    label: c.name,
+    value: c.totalAmount,
+    muted: c.id === 'uncategorized',
+  }))
+  const rest = categories.slice(MAX_ROWS)
+  if (rest.length > 0) {
+    items.push({
+      id: 'other',
+      label: `Other (${rest.length} categories)`,
+      value: rest.reduce((sum, c) => sum + c.totalAmount, 0),
+      muted: true,
+    })
+  }
 
   return (
-    <Card className="md:col-span-2 lg:col-span-4">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-medium sm:text-base">Expenses by category</CardTitle>
-        <CardDescription className="text-xs sm:text-sm">
-          General building expenses grouped by expense category.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        {isLoading ? (
-          <div className="flex h-[250px] items-center justify-center sm:h-[300px]">Loading...</div>
-        ) : !data || data.categories.length === 0 ? (
-          <div className="flex h-[250px] items-center justify-center text-sm text-muted-foreground sm:h-[300px]">
-            No expenses recorded in this period.
-          </div>
+    <Panel
+      title="Building expenses by category"
+      description={
+        data && categories.length > 0 ? (
+          <>
+            <span className="font-semibold text-foreground">{formatCurrency(data.grandTotal)}</span> in general
+            expenses (excludes generator & diesel).
+          </>
         ) : (
-          <ChartContainer config={chartConfig} className="h-[250px] w-full sm:h-[300px]">
-            <LineChart data={data.categories} margin={{ left: 4, right: 16, top: 8, bottom: 4 }}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} />
-              <XAxis
-                dataKey="name"
-                tickLine={false}
-                axisLine={false}
-                fontSize={11}
-                interval="preserveStartEnd"
-                angle={data.categories.length > 6 ? -35 : 0}
-                textAnchor={data.categories.length > 6 ? 'end' : 'middle'}
-                height={data.categories.length > 6 ? 56 : 32}
-              />
-              <YAxis
-                tickLine={false}
-                axisLine={false}
-                fontSize={12}
-                tickFormatter={(v) => `$${Number(v).toFixed(0)}`}
-                width={56}
-              />
-              <ChartTooltip
-                content={
-                  <ChartTooltipContent
-                    formatter={(value) => [formatCurrency(Number(value)), 'Total spent']}
-                  />
-                }
-              />
-              <Line
-                type="monotone"
-                dataKey="totalAmount"
-                stroke="var(--color-totalAmount)"
-                strokeWidth={2}
-                dot={{ r: 3, fill: 'var(--color-totalAmount)' }}
-                activeDot={{ r: 5 }}
-                connectNulls
-              />
-            </LineChart>
-          </ChartContainer>
-        )}
-      </CardContent>
-    </Card>
+          'General expenses, excluding generator & diesel.'
+        )
+      }
+      icon={Wallet}
+      status={empty ? 'empty' : status}
+      onRetry={onRetry}
+      emptyMessage="No expenses recorded in this period."
+      bodyClassName="min-h-[180px]"
+      className={className}
+    >
+      <BarList items={items} format={formatCurrency} barClassName="bg-[#4a3aa7] dark:bg-[#9085e9]" />
+    </Panel>
   )
 }
