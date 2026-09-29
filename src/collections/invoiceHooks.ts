@@ -1,5 +1,5 @@
 import type { CollectionBeforeChangeHook } from 'payload'
-import { effectiveAmountPaid, roundCents } from '@/lib/dieselExpenseBalance'
+import { resolvePaidState } from '@/lib/dieselExpenseBalance'
 import { buildFixedLineItems, sumLineItems, type InvoiceLineItem } from '@/lib/invoiceCalc'
 
 type InvoiceDoc = {
@@ -11,18 +11,11 @@ type InvoiceDoc = {
   isPaid?: boolean | null
 }
 
-const hasExplicitAmountPaid = (incoming: InvoiceDoc): boolean =>
-  incoming !== null &&
-  typeof incoming === 'object' &&
-  'amountPaid' in incoming &&
-  incoming.amountPaid !== undefined &&
-  incoming.amountPaid !== null
-
 /**
  * Snapshots fixed tenant fee line items on create (never re-derived on update, so
  * historical figures don't shift if the tenant's fees change later), keeps
- * `totalAmount` in sync with `lineItems`, and applies the same amountPaid/isPaid
- * clamp pattern used by DieselExpenses' syncDieselPaymentFields.
+ * `totalAmount` in sync with `lineItems`, and resolves amountPaid/isPaid the same way as
+ * DieselExpenses (`resolvePaidState`).
  */
 export const syncInvoicePaymentFields: CollectionBeforeChangeHook = async ({
   data,
@@ -59,30 +52,9 @@ export const syncInvoicePaymentFields: CollectionBeforeChangeHook = async ({
   const total = sumLineItems(lineItems)
   incoming.totalAmount = total
 
-  let paid: number
-  if (hasExplicitAmountPaid(incoming)) {
-    paid = Number(incoming.amountPaid)
-  } else if (incoming.isPaid === false && orig?.isPaid === true) {
-    paid = 0
-  } else {
-    paid = effectiveAmountPaid({
-      totalAmount: total,
-      amountPaid: orig?.amountPaid,
-      isPaid: orig?.isPaid,
-    })
-  }
-
-  if (incoming.isPaid === true && paid < total) {
-    paid = total
-  }
-
-  if (!Number.isFinite(paid)) {
-    paid = 0
-  }
-  paid = Math.max(0, Math.min(roundCents(paid), total))
-
-  incoming.amountPaid = paid
-  incoming.isPaid = total > 0 && paid >= total
+  const { amountPaid, isPaid } = resolvePaidState(total, incoming, orig)
+  incoming.amountPaid = amountPaid
+  incoming.isPaid = isPaid
 
   return incoming
 }

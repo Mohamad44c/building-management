@@ -286,7 +286,7 @@ export interface Tenant {
    */
   buildingFloor: number;
   /**
-   * Accumulated unpaid balance from previous payments
+   * Unpaid balance carried over from earlier months. Copied onto each new invoice as a "Past Due Balance" line — update it (or set it to 0) yourself after the tenant pays.
    */
   pastDueBalance?: number | null;
   /**

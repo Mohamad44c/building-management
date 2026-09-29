@@ -37,7 +37,7 @@ This is a **Payload CMS 3.x** app (admin backend) built on **Next.js 15 App Rout
 
 Diesel invoices track partial payments (`amountPaid`) alongside a boolean `isPaid`. The invariants are centralized rather than duplicated:
 
-- `src/lib/dieselExpenseBalance.ts` — pure helpers (`effectiveAmountPaid`, `remainingBalance`, `roundCents`) used by both the collection hook and dashboard aggregation. Legacy rows without `amountPaid` infer fully-paid from `isPaid === true`.
+- `src/lib/dieselExpenseBalance.ts` — pure helpers (`effectiveAmountPaid`, `remainingBalance`, `resolvePaidState`, `roundCents`) used by the DieselExpenses and Invoices hooks and dashboard aggregation. `isPaid === true` always means fully paid (legacy rows have `amountPaid` backfilled to 0). `resolvePaidState` infers intent from what changed vs the original doc, because the admin form resubmits every field.
 - `src/collections/dieselExpenseHooks.ts` — a `beforeChange` hook (`syncDieselPaymentFields`) on `DieselExpenses` that recomputes `totalAmount`, clamps `amountPaid` to `[0, total]`, and keeps `isPaid` in sync (including "mark paid" via checkbox without an explicit `amountPaid`, and reopening a settled invoice).
 - `getDieselOutstandingSummary` in `src/server/expenses.ts` sums remaining balances across unpaid/partially-paid invoices for the outstanding-balance dashboard card — deliberately independent of the dashboard's date-range filter.
 
@@ -55,4 +55,6 @@ When touching diesel payment fields, keep these three in sync; the balance math 
 
 ### Database
 
-Postgres via `@payloadcms/db-postgres`, configured from `DATABASE_URI` env var. `docker-compose.yml`/`Dockerfile` are available for local Postgres if not running it natively.
+Postgres via `@payloadcms/db-postgres`, configured from `DATABASE_URI` env var. The `.env` `DATABASE_URI` points at the **production** database.
+
+Schema push is disabled (`push: false`), so changing a collection schema does not touch the DB. Workflow: `pnpm payload migrate:create <name>` → review the generated file in `src/migrations/` → test it against a restored copy of prod (`pg_dump -Fc` + `pg_restore` into a local Postgres) → take a fresh backup → `pnpm payload migrate`. Never rename or remove fields in a migration without a data-preserving step. `docker-compose.yml`/`Dockerfile` are available for local Postgres if not running it natively.

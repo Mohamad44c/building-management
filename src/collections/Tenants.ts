@@ -95,7 +95,8 @@ export const Tenants: CollectionConfig = {
       min: 0,
       admin: {
         step: 0.01,
-        description: 'Accumulated unpaid balance from previous payments',
+        description:
+          'Unpaid balance carried over from earlier months. Copied onto each new invoice as a "Past Due Balance" line — update it (or set it to 0) yourself after the tenant pays.',
         position: 'sidebar',
       },
     },

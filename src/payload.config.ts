@@ -53,6 +53,9 @@ export default buildConfig({
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
   db: postgresAdapter({
+    // Never auto-push schema: DATABASE_URI may point at production. Schema changes go through
+    // `pnpm payload migrate:create` + `pnpm payload migrate` (see src/migrations).
+    push: false,
     pool: {
       connectionString: process.env.DATABASE_URI || '',
     },

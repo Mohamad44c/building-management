@@ -56,6 +56,7 @@ export async function getExpensesByDateRange(range: DateRange, monthIndex?: numb
 
     const expenses = await payload.find({
       collection: 'expenses',
+      limit: 0,
       where: {
         date: {
           greater_than_equal: startDate.toISOString(),
@@ -223,12 +224,14 @@ export async function getPaymentsByBuilding(startDate: string, endDate: string) 
     // Get all buildings
     const buildings = await payload.find({
       collection: 'buildings',
+      limit: 0,
       sort: 'name',
     })
 
     // Get payments in range with tenant and building information
     const payments = await payload.find({
       collection: 'payments',
+      limit: 0,
       depth: 2,
       sort: 'date',
       where: {
@@ -299,6 +302,7 @@ export async function getGeneratorExpensesByDateRange(range: DateRange, monthInd
 
     const expenses = await payload.find({
       collection: 'generator-expenses',
+      limit: 0,
       where: {
         date: {
           greater_than_equal: startDate.toISOString(),
@@ -343,6 +347,7 @@ export async function getGeneratorExpensesByCategory(range: DateRange, monthInde
 
     const expenses = await payload.find({
       collection: 'generator-expenses',
+      limit: 0,
       where: {
         date: {
           greater_than_equal: startDate.toISOString(),
@@ -404,6 +409,7 @@ export async function getTenantsByBuilding() {
     // Get all buildings
     const buildings = await payload.find({
       collection: 'buildings',
+      limit: 0,
       sort: 'name',
     })
 
